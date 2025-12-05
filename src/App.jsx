@@ -6,6 +6,9 @@ import TopBar from './components/TopBar/TopBar';
 import Home from './pages/Home';
 import Categories from './pages/Categories';
 import Loans from './pages/Loans';
+import Reservations from './pages/Reservations';
+import Users from './pages/Users';
+import Fines from './pages/Fines';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import BookForm from './components/BookForm/BookForm';
@@ -43,12 +46,10 @@ function App() {
               <Route path="/books/edit/:id" element={<BookForm />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/loans" element={<Loans />} />
-              <Route path="/my-library" element={<Home />} />
-              <Route path="/downloads" element={<Home />} />
-              <Route path="/audiobooks" element={<Home />} />
-              <Route path="/favourites" element={<Home />} />
+              <Route path="/reservations" element={<Reservations />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/fines" element={<Fines />} />
               <Route path="/settings" element={<Home />} />
-              <Route path="/support" element={<Home />} />
             </Routes>
           </AppLayout>
         </BrowserRouter>
