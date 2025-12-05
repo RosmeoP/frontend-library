@@ -6,23 +6,18 @@ import { useBooks } from '../context/BooksContext';
 import { useAuth } from '../context/AuthContext';
 
 function Home() {
-  const { books } = useBooks();
+  const { books, categorias } = useBooks();
   const { user } = useAuth();
   const [selectedBook, setSelectedBook] = useState(null);
-  const [selectedGenre, setSelectedGenre] = useState('');
-
-  const genres = useMemo(() => {
-    return ['All', ...new Set(books.map((book) => book.genre))].sort();
-  }, [books]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const filteredBooks = useMemo(() => {
-    if (!selectedGenre || selectedGenre === 'All') return books;
-    return books.filter((book) => book.genre === selectedGenre);
-  }, [books, selectedGenre]);
+    if (!selectedCategory) return books;
+    return books.filter((book) => book.id_categoria === selectedCategory);
+  }, [books, selectedCategory]);
 
   // Split books for recommended section (first 4)
-  const recommendedBooks = filteredBooks.slice(0, 4);
-  const categoryBooks = filteredBooks;
+  const recommendedBooks = books.slice(0, 4);
 
   return (
     <div className="flex gap-6 p-6 pl-8 h-[calc(100vh-5rem)] overflow-hidden">
@@ -31,9 +26,9 @@ function Home() {
         {/* Recommended Section */}
         <section className="mb-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Recommended</h2>
+            <h2 className="text-xl font-bold text-slate-900">Recomendados</h2>
             <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-              See All
+              Ver Todos
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -42,10 +37,10 @@ function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 p-1">
             {recommendedBooks.map((book) => (
               <BookCard
-                key={book.id}
+                key={book.id_libro}
                 book={book}
                 onSelect={setSelectedBook}
-                isSelected={selectedBook?.id === book.id}
+                isSelected={selectedBook?.id_libro === book.id_libro}
               />
             ))}
           </div>
@@ -54,7 +49,7 @@ function Home() {
         {/* Categories Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Categories</h2>
+            <h2 className="text-xl font-bold text-slate-900">Categorías</h2>
             {user && (
               <Link
                 to="/books/new"
@@ -63,49 +58,59 @@ function Home() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Add Book
+                Agregar Libro
               </Link>
             )}
           </div>
 
-          {/* Genre Chips */}
+          {/* Category Chips */}
           <div className="flex gap-2 mb-6 flex-wrap">
-            {genres.map((genre) => (
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                !selectedCategory
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Todos
+            </button>
+            {categorias.map((cat) => (
               <button
-                key={genre}
-                onClick={() => setSelectedGenre(genre === 'All' ? '' : genre)}
+                key={cat.id_categoria}
+                onClick={() => setSelectedCategory(cat.id_categoria)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  (selectedGenre === genre) || (genre === 'All' && !selectedGenre)
+                  selectedCategory === cat.id_categoria
                     ? 'bg-slate-900 text-white'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                {genre}
+                {cat.nombre}
               </button>
             ))}
           </div>
 
           {/* Books Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 p-1">
-            {categoryBooks.map((book) => (
+            {filteredBooks.map((book) => (
               <BookCard
-                key={book.id}
+                key={book.id_libro}
                 book={book}
                 onSelect={setSelectedBook}
-                isSelected={selectedBook?.id === book.id}
+                isSelected={selectedBook?.id_libro === book.id_libro}
               />
             ))}
           </div>
 
-          {categoryBooks.length === 0 && (
+          {filteredBooks.length === 0 && (
             <div className="text-center py-16">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
                 <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-1">No books found</h3>
-              <p className="text-slate-500">Try selecting a different category</p>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">No se encontraron libros</h3>
+              <p className="text-slate-500">Intenta seleccionar otra categoría</p>
             </div>
           )}
         </section>
@@ -121,8 +126,8 @@ function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h3 className="text-slate-400 font-medium mb-1">No book selected</h3>
-          <p className="text-slate-300 text-sm text-center">Click on a book to see its details</p>
+          <h3 className="text-slate-400 font-medium mb-1">Ningún libro seleccionado</h3>
+          <p className="text-slate-300 text-sm text-center">Haz clic en un libro para ver sus detalles</p>
         </div>
       )}
     </div>

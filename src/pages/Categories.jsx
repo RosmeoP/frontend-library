@@ -3,19 +3,9 @@ import { useBooks } from '../context/BooksContext';
 import BookCard from '../components/BookCard/BookCard';
 import BookDetail from '../components/BookDetail/BookDetail';
 
-const categoryConfig = {
-  'Classic': {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    ),
-    iconColor: 'text-amber-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-100',
-    description: 'Timeless masterpieces of literature'
-  },
-  'Fiction': {
+// Category styling config based on id_categoria
+const categoryStyles = {
+  1: { // Ficción
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -24,64 +14,18 @@ const categoryConfig = {
     iconColor: 'text-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-100',
-    description: 'Imaginative stories and narratives'
   },
-  'Fantasy': {
+  2: { // No Ficción
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
-    iconColor: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-100',
-    description: 'Magical worlds and epic adventures'
+    iconColor: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-100',
   },
-  'Romance': {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    ),
-    iconColor: 'text-pink-600',
-    bgColor: 'bg-pink-50',
-    borderColor: 'border-pink-100',
-    description: 'Love stories that touch the heart'
-  },
-  'Dystopian': {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>
-    ),
-    iconColor: 'text-red-600',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-100',
-    description: 'Dark visions of possible futures'
-  },
-  'Magical Realism': {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-      </svg>
-    ),
-    iconColor: 'text-teal-600',
-    bgColor: 'bg-teal-50',
-    borderColor: 'border-teal-100',
-    description: 'Where reality meets the magical'
-  },
-  'Mystery': {
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    iconColor: 'text-slate-600',
-    bgColor: 'bg-slate-100',
-    borderColor: 'border-slate-200',
-    description: 'Thrilling puzzles and suspense'
-  },
-  'Sci-Fi': {
+  3: { // Ciencia Ficción
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -90,29 +34,69 @@ const categoryConfig = {
     iconColor: 'text-cyan-600',
     bgColor: 'bg-cyan-50',
     borderColor: 'border-cyan-100',
-    description: 'Exploring the frontiers of science'
+  },
+  4: { // Fantasía
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+    ),
+    iconColor: 'text-purple-600',
+    bgColor: 'bg-purple-50',
+    borderColor: 'border-purple-100',
+  },
+  5: { // Historia
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    iconColor: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-100',
+  },
+  6: { // Tecnología
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    iconColor: 'text-slate-600',
+    bgColor: 'bg-slate-100',
+    borderColor: 'border-slate-200',
   },
 };
 
+const defaultStyle = {
+  icon: (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  ),
+  iconColor: 'text-slate-600',
+  bgColor: 'bg-slate-100',
+  borderColor: 'border-slate-200',
+};
+
 function Categories() {
-  const { books } = useBooks();
+  const { books, categorias, ejemplares } = useBooks();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBook, setSelectedBook] = useState(null);
 
-  // Get unique genres from books
-  const genres = useMemo(() => {
-    return [...new Set(books.map((book) => book.genre))].sort();
-  }, [books]);
-
-  // Get books for selected category
+  // Get books for selected category (books already have author info from context)
   const categoryBooks = useMemo(() => {
     if (!selectedCategory) return [];
-    return books.filter((book) => book.genre === selectedCategory);
+    return books.filter((book) => book.id_categoria === selectedCategory.id_categoria);
   }, [books, selectedCategory]);
 
-  // Get book count per genre
-  const getBookCount = (genre) => {
-    return books.filter((book) => book.genre === genre).length;
+  // Get book count per category
+  const getBookCount = (categoryId) => {
+    return books.filter((book) => book.id_categoria === categoryId).length;
+  };
+
+  // Get available copies count
+  const getAvailableCopies = () => {
+    return ejemplares.filter(e => e.estado === 'Disponible').length;
   };
 
   return (
@@ -123,38 +107,29 @@ function Categories() {
           <>
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Categories</h1>
-              <p className="text-slate-500">Browse books by category</p>
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">Categorías</h1>
+              <p className="text-slate-500">Explora libros por categoría</p>
             </div>
 
             {/* Categories Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {genres.map((genre) => {
-                const config = categoryConfig[genre] || {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  ),
-                  iconColor: 'text-slate-600',
-                  bgColor: 'bg-slate-100',
-                  borderColor: 'border-slate-200',
-                  description: 'Explore this collection'
-                };
+              {categorias.map((categoria) => {
+                const style = categoryStyles[categoria.id_categoria] || defaultStyle;
+                const bookCount = getBookCount(categoria.id_categoria);
 
                 return (
                   <button
-                    key={genre}
-                    onClick={() => setSelectedCategory(genre)}
-                    className={`group p-5 rounded-2xl text-left transition-all duration-200 bg-white border ${config.borderColor} hover:shadow-md hover:border-slate-200`}
+                    key={categoria.id_categoria}
+                    onClick={() => setSelectedCategory(categoria)}
+                    className={`group p-5 rounded-2xl text-left transition-all duration-200 bg-white border ${style.borderColor} hover:shadow-md hover:border-slate-200`}
                   >
-                    <div className={`w-12 h-12 rounded-xl ${config.bgColor} flex items-center justify-center mb-4 ${config.iconColor} group-hover:scale-105 transition-transform`}>
-                      {config.icon}
+                    <div className={`w-12 h-12 rounded-xl ${style.bgColor} flex items-center justify-center mb-4 ${style.iconColor} group-hover:scale-105 transition-transform`}>
+                      {style.icon}
                     </div>
-                    <h3 className="font-semibold text-slate-900 mb-1">{genre}</h3>
-                    <p className="text-sm text-slate-400 mb-3 line-clamp-2">{config.description}</p>
+                    <h3 className="font-semibold text-slate-900 mb-1">{categoria.nombre}</h3>
+                    <p className="text-sm text-slate-400 mb-3 line-clamp-2">{categoria.descripcion}</p>
                     <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                      {getBookCount(genre)} {getBookCount(genre) === 1 ? 'book' : 'books'}
+                      {bookCount} {bookCount === 1 ? 'libro' : 'libros'}
                     </span>
                   </button>
                 );
@@ -163,19 +138,23 @@ function Categories() {
 
             {/* Stats Section */}
             <div className="mt-10 p-6 bg-white rounded-2xl border border-slate-100">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Library Overview</h3>
-              <div className="grid grid-cols-3 gap-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Resumen de la Biblioteca</h3>
+              <div className="grid grid-cols-4 gap-6">
                 <div className="text-center p-4 bg-slate-50 rounded-xl">
                   <div className="text-3xl font-bold text-slate-900 mb-1">{books.length}</div>
-                  <div className="text-sm text-slate-500">Total Books</div>
+                  <div className="text-sm text-slate-500">Total Libros</div>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-xl">
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{genres.length}</div>
-                  <div className="text-sm text-slate-500">Categories</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{categorias.length}</div>
+                  <div className="text-sm text-slate-500">Categorías</div>
                 </div>
                 <div className="text-center p-4 bg-slate-50 rounded-xl">
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{books.filter(b => b.available).length}</div>
-                  <div className="text-sm text-slate-500">Available</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{ejemplares.length}</div>
+                  <div className="text-sm text-slate-500">Ejemplares</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{getAvailableCopies()}</div>
+                  <div className="text-sm text-slate-500">Disponibles</div>
                 </div>
               </div>
             </div>
@@ -188,8 +167,8 @@ function Categories() {
                 </svg>
               </div>
               <div>
-                <h4 className="font-medium text-slate-900 mb-1">Browse by category</h4>
-                <p className="text-sm text-slate-600">Click on any category above to explore books in that genre. You can also add new books from the Discover page.</p>
+                <h4 className="font-medium text-slate-900 mb-1">Explora por categoría</h4>
+                <p className="text-sm text-slate-600">Haz clic en cualquier categoría para ver los libros disponibles. También puedes agregar nuevos libros desde la página principal.</p>
               </div>
             </div>
           </>
@@ -207,29 +186,20 @@ function Categories() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Back to Categories
+                Volver a Categorías
               </button>
               
               {/* Category Header */}
               {(() => {
-                const config = categoryConfig[selectedCategory] || {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  ),
-                  iconColor: 'text-slate-600',
-                  bgColor: 'bg-slate-100',
-                  description: 'Explore this collection'
-                };
+                const style = categoryStyles[selectedCategory.id_categoria] || defaultStyle;
                 return (
                   <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-xl ${config.bgColor} flex items-center justify-center ${config.iconColor}`}>
-                      {config.icon}
+                    <div className={`w-14 h-14 rounded-xl ${style.bgColor} flex items-center justify-center ${style.iconColor}`}>
+                      {style.icon}
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold text-slate-900">{selectedCategory}</h1>
-                      <p className="text-slate-500">{categoryBooks.length} {categoryBooks.length === 1 ? 'book' : 'books'} in this category</p>
+                      <h1 className="text-2xl font-bold text-slate-900">{selectedCategory.nombre}</h1>
+                      <p className="text-slate-500">{categoryBooks.length} {categoryBooks.length === 1 ? 'libro' : 'libros'} en esta categoría</p>
                     </div>
                   </div>
                 );
@@ -240,10 +210,10 @@ function Categories() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 p-1">
               {categoryBooks.map((book) => (
                 <BookCard
-                  key={book.id}
+                  key={book.id_libro}
                   book={book}
                   onSelect={setSelectedBook}
-                  isSelected={selectedBook?.id === book.id}
+                  isSelected={selectedBook?.id_libro === book.id_libro}
                 />
               ))}
             </div>
@@ -255,8 +225,8 @@ function Categories() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-1">No books in this category</h3>
-                <p className="text-slate-500">Add some books to see them here</p>
+                <h3 className="text-lg font-semibold text-slate-800 mb-1">No hay libros en esta categoría</h3>
+                <p className="text-slate-500">Agrega algunos libros para verlos aquí</p>
               </div>
             )}
           </>
@@ -273,8 +243,8 @@ function Categories() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h3 className="text-slate-400 font-medium mb-1">No book selected</h3>
-          <p className="text-slate-300 text-sm text-center">Click on a book to see its details</p>
+          <h3 className="text-slate-400 font-medium mb-1">Ningún libro seleccionado</h3>
+          <p className="text-slate-300 text-sm text-center">Haz clic en un libro para ver sus detalles</p>
         </div>
       )}
     </div>

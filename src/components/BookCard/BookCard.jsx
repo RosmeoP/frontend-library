@@ -5,10 +5,19 @@ function BookCard({ book, onSelect, isSelected }) {
   const { user } = useAuth();
   const { deleteBook } = useBooks();
 
+  // Support both old and new data structure
+  const title = book.titulo || book.title;
+  const author = book.autorNombre || book.author;
+  const cover = book.portada || book.cover;
+  const id = book.id_libro || book.id;
+  const disponible = book.disponible ?? book.available;
+  const ejemplaresDisponibles = book.ejemplaresDisponibles ?? (book.available ? 1 : 0);
+  const totalEjemplares = book.totalEjemplares ?? 1;
+
   const handleDelete = (e) => {
     e.stopPropagation();
-    if (window.confirm(`Are you sure you want to delete "${book.title}"?`)) {
-      deleteBook(book.id);
+    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+      deleteBook(id);
     }
   };
 
@@ -27,10 +36,19 @@ function BookCard({ book, onSelect, isSelected }) {
         }`}
       >
         <img
-          src={book.cover}
-          alt={book.title}
+          src={cover}
+          alt={title}
           className="w-full h-full object-cover"
         />
+        
+        {/* Availability badge */}
+        <div className={`absolute top-3 left-3 px-2 py-1 rounded-lg text-xs font-medium ${
+          disponible 
+            ? 'bg-green-500/90 text-white' 
+            : 'bg-red-500/90 text-white'
+        }`}>
+          {disponible ? `${ejemplaresDisponibles}/${totalEjemplares}` : 'No disponible'}
+        </div>
         
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
@@ -53,9 +71,9 @@ function BookCard({ book, onSelect, isSelected }) {
       {/* Book Info */}
       <div className="mt-3 px-1">
         <h3 className="text-sm font-semibold text-slate-900 truncate">
-          {book.title}
+          {title}
         </h3>
-        <p className="text-xs text-slate-500 mt-0.5">{book.author}</p>
+        <p className="text-xs text-slate-500 mt-0.5 truncate">{author}</p>
       </div>
     </div>
   );
