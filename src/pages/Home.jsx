@@ -25,9 +25,9 @@ function Home() {
   const categoryBooks = filteredBooks;
 
   return (
-    <div className="flex gap-6 p-6 h-[calc(100vh-5rem)]">
+    <div className="flex gap-6 p-6 pl-8 h-[calc(100vh-5rem)] overflow-hidden">
       {/* Main Content */}
-      <div className={`flex-1 transition-all overflow-y-auto ${selectedBook ? 'mr-0' : ''}`}>
+      <div className="flex-1 transition-all overflow-y-auto pr-2 max-w-5xl">
         {/* Recommended Section */}
         <section className="mb-10">
           <div className="flex items-center justify-between mb-6">
@@ -39,7 +39,7 @@ function Home() {
               </svg>
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 p-1">
             {recommendedBooks.map((book) => (
               <BookCard
                 key={book.id}
@@ -86,7 +86,7 @@ function Home() {
           </div>
 
           {/* Books Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 p-1">
             {categoryBooks.map((book) => (
               <BookCard
                 key={book.id}
