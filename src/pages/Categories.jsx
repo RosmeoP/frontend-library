@@ -160,6 +160,38 @@ function Categories() {
                 );
               })}
             </div>
+
+            {/* Stats Section */}
+            <div className="mt-10 p-6 bg-white rounded-2xl border border-slate-100">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Library Overview</h3>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{books.length}</div>
+                  <div className="text-sm text-slate-500">Total Books</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{genres.length}</div>
+                  <div className="text-sm text-slate-500">Categories</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 rounded-xl">
+                  <div className="text-3xl font-bold text-slate-900 mb-1">{books.filter(b => b.available).length}</div>
+                  <div className="text-sm text-slate-500">Available</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tip Section */}
+            <div className="mt-6 p-5 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-medium text-slate-900 mb-1">Browse by category</h4>
+                <p className="text-sm text-slate-600">Click on any category above to explore books in that genre. You can also add new books from the Discover page.</p>
+              </div>
+            </div>
           </>
         ) : (
           <>
