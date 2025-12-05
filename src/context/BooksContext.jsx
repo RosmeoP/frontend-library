@@ -192,6 +192,93 @@ export function BooksProvider({ children }) {
     return newEditorial;
   };
 
+  // CRUD for PRESTAMOS (Loans)
+  const addPrestamo = (prestamoData) => {
+    const newId = Math.max(...prestamos.map(p => p.id_prestamo), 0) + 1;
+    const newPrestamo = {
+      id_prestamo: newId,
+      id_ejemplar: prestamoData.id_ejemplar,
+      id_usuario: prestamoData.id_usuario,
+      fecha_prestamo: new Date().toISOString(),
+      fecha_devolucion_esperada: prestamoData.fecha_devolucion_esperada,
+      fecha_devuelto: null,
+      estado_prestamo: 'Activo',
+    };
+    
+    // Update the ejemplar status to 'Prestado'
+    setEjemplares(prev => prev.map(e => 
+      e.id_ejemplar === prestamoData.id_ejemplar 
+        ? { ...e, estado: 'Prestado' } 
+        : e
+    ));
+    
+    setPrestamos(prev => [...prev, newPrestamo]);
+    return newPrestamo;
+  };
+
+  const returnPrestamo = (idPrestamo) => {
+    const prestamo = prestamos.find(p => p.id_prestamo === idPrestamo);
+    if (!prestamo) return null;
+
+    const fechaDevuelto = new Date().toISOString().split('T')[0];
+    const fechaEsperada = new Date(prestamo.fecha_devolucion_esperada);
+    const fechaActual = new Date(fechaDevuelto);
+    
+    // Check if overdue and create multa if needed
+    if (fechaActual > fechaEsperada) {
+      const diasRetraso = Math.ceil((fechaActual - fechaEsperada) / (1000 * 60 * 60 * 24));
+      const montoMulta = diasRetraso * 2.00; // $2 per day
+      const newMultaId = Math.max(...multas.map(m => m.id_multa), 0) + 1;
+      setMultas(prev => [...prev, {
+        id_multa: newMultaId,
+        id_prestamo: idPrestamo,
+        monto: montoMulta,
+        pagado: false,
+        fecha_pago: null,
+      }]);
+    }
+
+    // Update prestamo status
+    setPrestamos(prev => prev.map(p => 
+      p.id_prestamo === idPrestamo 
+        ? { ...p, fecha_devuelto: fechaDevuelto, estado_prestamo: 'Finalizado' } 
+        : p
+    ));
+
+    // Update ejemplar status back to 'Disponible'
+    setEjemplares(prev => prev.map(e => 
+      e.id_ejemplar === prestamo.id_ejemplar 
+        ? { ...e, estado: 'Disponible' } 
+        : e
+    ));
+
+    return prestamo;
+  };
+
+  const getPrestamo = (idPrestamo) => {
+    return prestamos.find(p => p.id_prestamo === idPrestamo);
+  };
+
+  // Helper to get full prestamo info with related data
+  const getPrestamoCompleto = (prestamo) => {
+    const ejemplar = ejemplares.find(e => e.id_ejemplar === prestamo.id_ejemplar);
+    const libro = ejemplar ? libros.find(l => l.id_libro === ejemplar.id_libro) : null;
+    const usuario = usuarios.find(u => u.id_usuario === prestamo.id_usuario);
+    
+    return {
+      ...prestamo,
+      ejemplar,
+      libro,
+      usuario,
+      libroTitulo: libro?.titulo || 'Desconocido',
+      usuarioNombre: usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Desconocido',
+      codigoBarras: ejemplar?.codigo_barras || 'N/A',
+    };
+  };
+
+  // Get all prestamos with full info
+  const prestamosCompletos = prestamos.map(getPrestamoCompleto);
+
   const value = {
     // Processed books (with relationships)
     books,
@@ -206,6 +293,8 @@ export function BooksProvider({ children }) {
     prestamos,
     reservas,
     multas,
+    // Processed data
+    prestamosCompletos,
     // Book operations
     addBook,
     updateBook,
@@ -214,6 +303,11 @@ export function BooksProvider({ children }) {
     // Ejemplar operations
     addEjemplar,
     updateEjemplar,
+    // Prestamo operations
+    addPrestamo,
+    returnPrestamo,
+    getPrestamo,
+    getPrestamoCompleto,
     // Other operations
     addAutor,
     addCategoria,
