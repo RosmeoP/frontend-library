@@ -57,7 +57,7 @@ function BookForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -77,13 +77,16 @@ function BookForm() {
       id_autor: formData.selectedAutores[0], // For simplicity, just use first selected author
     };
 
-    if (isEditing) {
-      updateBook(Number(id), libroData);
-    } else {
-      addBook(libroData);
+    try {
+      if (isEditing) {
+        await updateBook(Number(id), libroData);
+      } else {
+        await addBook(libroData);
+      }
+      navigate('/');
+    } catch (err) {
+      setError('Error al guardar el libro. Intenta de nuevo.');
     }
-
-    navigate('/');
   };
 
   return (
