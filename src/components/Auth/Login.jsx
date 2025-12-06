@@ -14,7 +14,7 @@ function Login() {
     setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Por favor completa todos los campos');
       return;
     }
 
@@ -42,13 +42,13 @@ function Login() {
         </div>
         <div>
           <h1 className="text-4xl font-bold text-white mb-4">
-            Welcome back to your digital library
+            Bienvenido de nuevo a tu biblioteca digital
           </h1>
           <p className="text-slate-400 text-lg">
-            Access thousands of books, manage your collection, and discover new reads.
+            Accede a miles de libros, gestiona tu colección y descubre nuevas lecturas.
           </p>
         </div>
-        <p className="text-slate-500 text-sm">© 2025 BookBase. All rights reserved.</p>
+        <p className="text-slate-500 text-sm">© 2025 BookBase. Todos los derechos reservados.</p>
       </div>
 
       {/* Right Side - Form */}
@@ -64,8 +64,8 @@ function Login() {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900">Sign in</h2>
-            <p className="text-slate-500 mt-2">Enter your credentials to continue</p>
+            <h2 className="text-3xl font-bold text-slate-900">Iniciar Sesión</h2>
+            <p className="text-slate-500 mt-2">Ingresa tus credenciales para continuar</p>
           </div>
 
           {error && (
@@ -80,27 +80,27 @@ function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email address
+                Correo electrónico
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="you@example.com"
+                placeholder="tu@ejemplo.com"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Password
+                Contraseña
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="Enter your password"
+                placeholder="Ingresa tu contraseña"
               />
             </div>
 
@@ -108,14 +108,14 @@ function Login() {
               type="submit"
               className="w-full bg-slate-900 text-white py-3.5 px-4 rounded-xl font-semibold hover:bg-slate-800 transition-all"
             >
-              Sign In
+              Iniciar Sesión
             </button>
           </form>
 
           <p className="mt-8 text-center text-slate-500">
-            Don't have an account?{' '}
+            ¿No tienes una cuenta?{' '}
             <Link to="/register" className="text-slate-900 font-semibold hover:underline">
-              Create one
+              Crear una
             </Link>
           </p>
         </div>

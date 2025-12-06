@@ -32,7 +32,7 @@ function TopBar({ onMenuClick }) {
           </svg>
           <input
             type="text"
-            placeholder="Search books..."
+            placeholder="Buscar libros..."
             className="w-full py-2.5 md:py-3 px-4 pl-12 bg-slate-50 border-0 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
           />
         </div>
@@ -65,7 +65,7 @@ function TopBar({ onMenuClick }) {
             to="/login"
             className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all"
           >
-            Sign In
+            Iniciar Sesión
           </Link>
         )}
       </div>

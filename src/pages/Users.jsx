@@ -72,14 +72,14 @@ function Users() {
 
   // Handle delete user
   const handleDeleteUser = (userId) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       setUsuarios(prev => prev.filter(u => u.id_usuario !== userId));
       setSelectedUser(null);
     }
   };
 
   const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -91,8 +91,8 @@ function Users() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Users</h1>
-          <p className="text-slate-500 mt-1">Manage library members</p>
+          <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
+          <p className="text-slate-500 mt-1">Gestiona los miembros de la biblioteca</p>
         </div>
         <button
           onClick={() => setShowNewUser(true)}
@@ -101,7 +101,7 @@ function Users() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Add User
+          Agregar Usuario
         </button>
       </div>
 
@@ -116,7 +116,7 @@ function Users() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-              <p className="text-sm text-slate-500">Total Users</p>
+              <p className="text-sm text-slate-500">Total Usuarios</p>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ function Users() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.students}</p>
-              <p className="text-sm text-slate-500">Students</p>
+              <p className="text-sm text-slate-500">Estudiantes</p>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ function Users() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.professors}</p>
-              <p className="text-sm text-slate-500">Professors</p>
+              <p className="text-sm text-slate-500">Profesores</p>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ function Users() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.external}</p>
-              <p className="text-sm text-slate-500">External</p>
+              <p className="text-sm text-slate-500">Externos</p>
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ function Users() {
           </svg>
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder="Buscar usuarios..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -183,20 +183,20 @@ function Users() {
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">User</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Contact</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Type</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Registered</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Active Loans</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Fines</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Actions</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Usuario</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Contacto</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Tipo</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Registro</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Préstamos Activos</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Multas</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-slate-500">
-                  No users found
+                  No se encontraron usuarios
                 </td>
               </tr>
             ) : (
@@ -231,8 +231,8 @@ function Users() {
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-amber-100 text-amber-800'
                       }`}>
-                        {user.tipo_usuario === 'Estudiante' ? 'Student' :
-                         user.tipo_usuario === 'Profesor' ? 'Professor' : 'External'}
+                        {user.tipo_usuario === 'Estudiante' ? 'Estudiante' :
+                         user.tipo_usuario === 'Profesor' ? 'Profesor' : 'Externo'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-sm text-slate-600">
@@ -260,13 +260,13 @@ function Users() {
                           onClick={() => setSelectedUser(user)}
                           className="text-slate-600 hover:text-slate-900 text-sm font-medium"
                         >
-                          View
+                          Ver
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user.id_usuario)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium"
                         >
-                          Delete
+                          Eliminar
                         </button>
                       </div>
                     </td>
@@ -283,7 +283,7 @@ function Users() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Add New User</h2>
+              <h2 className="text-xl font-bold text-slate-900">Agregar Nuevo Usuario</h2>
               <button
                 onClick={() => setShowNewUser(false)}
                 className="text-slate-400 hover:text-slate-600"
@@ -297,43 +297,43 @@ function Users() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  First Name *
+                  Nombre *
                 </label>
                 <input
                   type="text"
                   value={newUser.nombre}
                   onChange={(e) => setNewUser(prev => ({ ...prev, nombre: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
-                  placeholder="John"
+                  placeholder="Juan"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Last Name *
+                  Apellido *
                 </label>
                 <input
                   type="text"
                   value={newUser.apellido}
                   onChange={(e) => setNewUser(prev => ({ ...prev, apellido: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
-                  placeholder="Doe"
+                  placeholder="Pérez"
                 />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Email *
+                  Correo electrónico *
                 </label>
                 <input
                   type="email"
                   value={newUser.email}
                   onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
-                  placeholder="john.doe@email.com"
+                  placeholder="juan.perez@correo.com"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Phone
+                  Teléfono
                 </label>
                 <input
                   type="tel"
@@ -345,28 +345,28 @@ function Users() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  User Type
+                  Tipo de Usuario
                 </label>
                 <select
                   value={newUser.tipo_usuario}
                   onChange={(e) => setNewUser(prev => ({ ...prev, tipo_usuario: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
                 >
-                  <option value="Estudiante">Student</option>
-                  <option value="Profesor">Professor</option>
-                  <option value="Externo">External</option>
+                  <option value="Estudiante">Estudiante</option>
+                  <option value="Profesor">Profesor</option>
+                  <option value="Externo">Externo</option>
                 </select>
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Address
+                  Dirección
                 </label>
                 <input
                   type="text"
                   value={newUser.direccion}
                   onChange={(e) => setNewUser(prev => ({ ...prev, direccion: e.target.value }))}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
-                  placeholder="123 Main St"
+                  placeholder="Calle Principal 123"
                 />
               </div>
             </div>
@@ -376,14 +376,14 @@ function Users() {
                 onClick={() => setShowNewUser(false)}
                 className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={handleCreateUser}
                 disabled={!newUser.nombre || !newUser.apellido || !newUser.email}
                 className="flex-1 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add User
+                Agregar Usuario
               </button>
             </div>
           </div>
@@ -395,7 +395,7 @@ function Users() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-900">User Details</h2>
+              <h2 className="text-xl font-bold text-slate-900">Detalles del Usuario</h2>
               <button
                 onClick={() => setSelectedUser(null)}
                 className="text-slate-400 hover:text-slate-600"
@@ -423,8 +423,8 @@ function Users() {
                       ? 'bg-purple-100 text-purple-800'
                       : 'bg-amber-100 text-amber-800'
                 }`}>
-                  {selectedUser.tipo_usuario === 'Estudiante' ? 'Student' :
-                   selectedUser.tipo_usuario === 'Profesor' ? 'Professor' : 'External'}
+                  {selectedUser.tipo_usuario === 'Estudiante' ? 'Estudiante' :
+                   selectedUser.tipo_usuario === 'Profesor' ? 'Profesor' : 'Externo'}
                 </span>
               </div>
             </div>
@@ -432,19 +432,19 @@ function Users() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-slate-500">Email</p>
+                  <p className="text-sm text-slate-500">Correo</p>
                   <p className="text-sm font-medium text-slate-900">{selectedUser.email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Phone</p>
+                  <p className="text-sm text-slate-500">Teléfono</p>
                   <p className="text-sm font-medium text-slate-900">{selectedUser.telefono || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Address</p>
+                  <p className="text-sm text-slate-500">Dirección</p>
                   <p className="text-sm font-medium text-slate-900">{selectedUser.direccion || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Registered</p>
+                  <p className="text-sm text-slate-500">Registro</p>
                   <p className="text-sm font-medium text-slate-900">{formatDate(selectedUser.fecha_registro)}</p>
                 </div>
               </div>
@@ -454,21 +454,21 @@ function Users() {
                 const stats = getUserStats(selectedUser.id_usuario);
                 return (
                   <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-sm font-medium text-slate-700 mb-3">Activity</p>
+                    <p className="text-sm font-medium text-slate-700 mb-3">Actividad</p>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-slate-50 rounded-xl p-3 text-center">
                         <p className="text-lg font-bold text-slate-900">{stats.totalLoans}</p>
-                        <p className="text-xs text-slate-500">Total Loans</p>
+                        <p className="text-xs text-slate-500">Total Préstamos</p>
                       </div>
                       <div className="bg-slate-50 rounded-xl p-3 text-center">
                         <p className="text-lg font-bold text-blue-600">{stats.activeLoans}</p>
-                        <p className="text-xs text-slate-500">Active</p>
+                        <p className="text-xs text-slate-500">Activos</p>
                       </div>
                       <div className="bg-slate-50 rounded-xl p-3 text-center">
                         <p className={`text-lg font-bold ${stats.unpaidFines > 0 ? 'text-red-600' : 'text-slate-900'}`}>
                           ${stats.unpaidFines.toFixed(2)}
                         </p>
-                        <p className="text-xs text-slate-500">Unpaid Fines</p>
+                        <p className="text-xs text-slate-500">Multas Pendientes</p>
                       </div>
                     </div>
                   </div>
@@ -481,7 +481,7 @@ function Users() {
                 onClick={() => setSelectedUser(null)}
                 className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors"
               >
-                Close
+                Cerrar
               </button>
             </div>
           </div>

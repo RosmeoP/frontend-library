@@ -9,7 +9,7 @@ function SearchBar({ searchTerm, onSearchChange, selectedGenre, onGenreChange, g
         </div>
         <input
           type="text"
-          placeholder="Search by title or author..."
+          placeholder="Buscar por título o autor..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full py-3.5 px-4 pl-12 bg-slate-50 border-2 border-transparent rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 transition-all"
@@ -21,7 +21,7 @@ function SearchBar({ searchTerm, onSearchChange, selectedGenre, onGenreChange, g
           onChange={(e) => onGenreChange(e.target.value)}
           className="w-full sm:w-auto appearance-none py-3.5 px-5 pr-12 bg-slate-50 border-2 border-transparent rounded-xl text-slate-700 font-medium cursor-pointer focus:outline-none focus:bg-white focus:border-emerald-500 transition-all"
         >
-          <option value="">All Genres</option>
+          <option value="">Todos los Géneros</option>
           {genres.map((genre) => (
             <option key={genre} value={genre}>
               {genre}

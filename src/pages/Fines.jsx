@@ -17,9 +17,9 @@ function Fines() {
       prestamo,
       usuario,
       libro,
-      userName: usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Unknown',
+      userName: usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Desconocido',
       userEmail: usuario?.email || '',
-      bookTitle: libro?.titulo || 'Unknown',
+      bookTitle: libro?.titulo || 'Desconocido',
       loanDate: prestamo?.fecha_prestamo,
       returnDate: prestamo?.fecha_devuelto,
       expectedDate: prestamo?.fecha_devolucion_esperada,
@@ -53,14 +53,14 @@ function Fines() {
 
   // Delete fine
   const deleteFine = (fineId) => {
-    if (confirm('Are you sure you want to delete this fine?')) {
+    if (confirm('¿Está seguro de que desea eliminar esta multa?')) {
       setMultas(prev => prev.filter(m => m.id_multa !== fineId));
     }
   };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -72,8 +72,8 @@ function Fines() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Fines</h1>
-          <p className="text-slate-500 mt-1">Manage overdue penalties</p>
+          <h1 className="text-2xl font-bold text-slate-900">Multas</h1>
+          <p className="text-slate-500 mt-1">Gestionar penalizaciones por retraso</p>
         </div>
       </div>
 
@@ -88,7 +88,7 @@ function Fines() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.unpaid}</p>
-              <p className="text-sm text-slate-500">Unpaid Fines</p>
+              <p className="text-sm text-slate-500">Multas Pendientes</p>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ function Fines() {
             </div>
             <div>
               <p className="text-2xl font-bold text-red-600">${stats.totalUnpaid.toFixed(2)}</p>
-              <p className="text-sm text-slate-500">Outstanding</p>
+              <p className="text-sm text-slate-500">Pendiente</p>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@ function Fines() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.paid}</p>
-              <p className="text-sm text-slate-500">Paid Fines</p>
+              <p className="text-sm text-slate-500">Multas Pagadas</p>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ function Fines() {
             </div>
             <div>
               <p className="text-2xl font-bold text-green-600">${stats.totalCollected.toFixed(2)}</p>
-              <p className="text-sm text-slate-500">Collected</p>
+              <p className="text-sm text-slate-500">Recaudado</p>
             </div>
           </div>
         </div>
@@ -136,8 +136,8 @@ function Fines() {
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         {[
-          { id: 'unpaid', label: 'Unpaid', count: stats.unpaid },
-          { id: 'paid', label: 'Paid', count: stats.paid },
+          { id: 'unpaid', label: 'Pendientes', count: stats.unpaid },
+          { id: 'paid', label: 'Pagadas', count: stats.paid },
         ].map(tab => (
           <button
             key={tab.id}
@@ -159,20 +159,20 @@ function Fines() {
           <thead className="bg-slate-50 border-b border-slate-100">
             <tr>
               <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">ID</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">User</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Book</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Due Date</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Returned</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Amount</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Status</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Actions</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Usuario</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Libro</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Fecha Límite</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Devuelto</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Monto</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Estado</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-slate-600">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {displayedFines.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-slate-500">
-                  No fines found
+                  No se encontraron multas
                 </td>
               </tr>
             ) : (
@@ -187,7 +187,7 @@ function Fines() {
                   </td>
                   <td className="py-4 px-6">
                     <p className="text-sm font-medium text-slate-900">{fine.bookTitle}</p>
-                    <p className="text-xs text-slate-500">Loan #{fine.id_prestamo}</p>
+                    <p className="text-xs text-slate-500">Préstamo #{fine.id_prestamo}</p>
                   </td>
                   <td className="py-4 px-6 text-sm text-slate-600">
                     {formatDate(fine.expectedDate)}
@@ -206,7 +206,7 @@ function Fines() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {fine.pagado ? 'Paid' : 'Unpaid'}
+                      {fine.pagado ? 'Pagada' : 'Pendiente'}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -216,14 +216,14 @@ function Fines() {
                           onClick={() => markAsPaid(fine.id_multa)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium"
                         >
-                          Mark Paid
+                          Marcar Pagada
                         </button>
                       )}
                       <button
                         onClick={() => deleteFine(fine.id_multa)}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"
                       >
-                        Delete
+                        Eliminar
                       </button>
                     </div>
                   </td>
@@ -243,11 +243,11 @@ function Fines() {
             </svg>
           </div>
           <div>
-            <h3 className="font-semibold text-amber-900">How Fines Work</h3>
+            <h3 className="font-semibold text-amber-900">Cómo Funcionan las Multas</h3>
             <p className="text-sm text-amber-700 mt-1">
-              Fines are automatically generated when a book is returned after its due date. 
-              The rate is <strong>$2.00 per day</strong> overdue. Users can pay their fines at 
-              the library counter or through online payment.
+              Las multas se generan automáticamente cuando un libro se devuelve después de su fecha límite. 
+              La tarifa es de <strong>$2.00 por día</strong> de retraso. Los usuarios pueden pagar sus multas en 
+              el mostrador de la biblioteca o mediante pago en línea.
             </p>
           </div>
         </div>

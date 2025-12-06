@@ -65,16 +65,16 @@ function Sidebar({ isOpen, onClose }) {
   };
 
   const menuItems = [
-    { icon: icons.discover, label: 'Discover', path: '/' },
-    { icon: icons.category, label: 'Categories', path: '/categories' },
-    { icon: icons.loans, label: 'Loans', path: '/loans' },
-    { icon: icons.reservations, label: 'Reservations', path: '/reservations' },
-    { icon: icons.users, label: 'Users', path: '/users' },
-    { icon: icons.fines, label: 'Fines', path: '/fines' },
+    { icon: icons.discover, label: 'Descubrir', path: '/' },
+    { icon: icons.category, label: 'Categorías', path: '/categories' },
+    { icon: icons.loans, label: 'Préstamos', path: '/loans' },
+    { icon: icons.reservations, label: 'Reservas', path: '/reservations' },
+    { icon: icons.users, label: 'Usuarios', path: '/users' },
+    { icon: icons.fines, label: 'Multas', path: '/fines' },
   ];
 
   const bottomItems = [
-    { icon: icons.settings, label: 'Settings', path: '/settings' },
+    { icon: icons.settings, label: 'Configuración', path: '/settings' },
   ];
 
   return (
@@ -159,7 +159,7 @@ function Sidebar({ isOpen, onClose }) {
                   className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all"
                 >
                   {icons.logout}
-                  Logout
+                  Cerrar Sesión
                 </button>
               </li>
             )}
@@ -183,7 +183,7 @@ function Sidebar({ isOpen, onClose }) {
               onClick={handleNavClick}
               className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all"
             >
-              Sign In
+              Iniciar Sesión
             </NavLink>
           )}
         </div>

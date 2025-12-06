@@ -16,17 +16,17 @@ function Register() {
     setError('');
 
     if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError('Por favor completa todos los campos');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -63,13 +63,13 @@ function Register() {
         </div>
         <div>
           <h1 className="text-4xl font-bold text-white mb-4">
-            Start your reading journey today
+            Comienza tu aventura de lectura hoy
           </h1>
           <p className="text-slate-400 text-lg">
-            Join thousands of readers. Create your account and discover amazing books.
+            Únete a miles de lectores. Crea tu cuenta y descubre libros increíbles.
           </p>
         </div>
-        <p className="text-slate-500 text-sm">© 2025 BookBase. All rights reserved.</p>
+        <p className="text-slate-500 text-sm">© 2025 BookBase. Todos los derechos reservados.</p>
       </div>
 
       {/* Right Side - Form */}
@@ -85,8 +85,8 @@ function Register() {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900">Create account</h2>
-            <p className="text-slate-500 mt-2">Join our community of book lovers</p>
+            <h2 className="text-3xl font-bold text-slate-900">Crear cuenta</h2>
+            <p className="text-slate-500 mt-2">Únete a nuestra comunidad de amantes de los libros</p>
           </div>
 
           {error && (
@@ -101,53 +101,53 @@ function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Full name
+                Nombre completo
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="John Doe"
+                placeholder="Juan Pérez"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email address
+                Correo electrónico
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="you@example.com"
+                placeholder="tu@ejemplo.com"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Password
+                Contraseña
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="Min. 6 characters"
+                placeholder="Mínimo 6 caracteres"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Confirm password
+                Confirmar contraseña
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all"
-                placeholder="Confirm your password"
+                placeholder="Confirma tu contraseña"
               />
             </div>
 
@@ -155,14 +155,14 @@ function Register() {
               type="submit"
               className="w-full bg-slate-900 text-white py-3.5 px-4 rounded-xl font-semibold hover:bg-slate-800 transition-all mt-2"
             >
-              Create Account
+              Crear Cuenta
             </button>
           </form>
 
           <p className="mt-8 text-center text-slate-500">
-            Already have an account?{' '}
+            ¿Ya tienes una cuenta?{' '}
             <Link to="/login" className="text-slate-900 font-semibold hover:underline">
-              Sign in
+              Iniciar sesión
             </Link>
           </p>
         </div>
