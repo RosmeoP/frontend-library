@@ -11,7 +11,7 @@ function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -30,7 +30,16 @@ function Register() {
       return;
     }
 
-    const result = register(name, email, password);
+    const [nombre, ...apellidoParts] = name.split(' ');
+    const apellido = apellidoParts.join(' ') || nombre;
+    
+    const result = await register({
+      nombre,
+      apellido,
+      email,
+      password,
+      tipo_usuario: 'Estudiante'
+    });
     if (result.success) {
       navigate('/');
     } else {
