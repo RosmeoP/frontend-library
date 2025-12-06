@@ -70,9 +70,9 @@ export function BooksProvider({ children }) {
     try {
       const newBook = await api.books.create({
         titulo: bookData.titulo,
-        isbn: bookData.ISBN || bookData.isbn,
-        anoedicion: bookData.anio_edicion || bookData.anoedicion,
-        codigoeditorial: bookData.codigo_editorial || bookData.codigoeditorial,
+        isbn: bookData.isbn,
+        anoedicion: bookData.anoedicion,
+        codigoeditorial: bookData.codigoeditorial,
         id_categoria: bookData.id_categoria,
         sinopsis: bookData.sinopsis
       });
@@ -88,9 +88,9 @@ export function BooksProvider({ children }) {
     try {
       await api.books.update(id, {
         titulo: updatedData.titulo,
-        isbn: updatedData.ISBN || updatedData.isbn,
-        anoedicion: updatedData.anio_edicion || updatedData.anoedicion,
-        codigoeditorial: updatedData.codigo_editorial || updatedData.codigoeditorial,
+        isbn: updatedData.isbn,
+        anoedicion: updatedData.anoedicion,
+        codigoeditorial: updatedData.codigoeditorial,
         id_categoria: updatedData.id_categoria,
         sinopsis: updatedData.sinopsis
       });

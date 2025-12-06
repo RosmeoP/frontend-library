@@ -10,9 +10,9 @@ function BookForm() {
 
   const [formData, setFormData] = useState({
     titulo: '',
-    ISBN: '',
-    anio_edicion: '',
-    codigo_editorial: '',
+    isbn: '',
+    anoedicion: '',
+    codigoeditorial: '',
     id_categoria: '',
     sinopsis: '',
     portada: '',
@@ -26,9 +26,9 @@ function BookForm() {
       if (libro) {
         setFormData({
           titulo: libro.titulo,
-          ISBN: libro.ISBN,
-          anio_edicion: libro.anio_edicion,
-          codigo_editorial: libro.codigo_editorial,
+          isbn: libro.isbn,
+          anoedicion: libro.anoedicion,
+          codigoeditorial: libro.codigoeditorial,
           id_categoria: libro.id_categoria,
           sinopsis: libro.sinopsis || '',
           portada: libro.portada || '',
@@ -61,20 +61,20 @@ function BookForm() {
     e.preventDefault();
     setError('');
 
-    if (!formData.titulo || !formData.ISBN || !formData.anio_edicion || !formData.id_categoria || !formData.codigo_editorial) {
+    if (!formData.titulo || !formData.isbn || !formData.anoedicion || !formData.id_categoria || !formData.codigoeditorial) {
       setError('Por favor completa todos los campos requeridos');
       return;
     }
 
     const libroData = {
       titulo: formData.titulo,
-      ISBN: formData.ISBN,
-      anio_edicion: Number(formData.anio_edicion),
-      codigo_editorial: Number(formData.codigo_editorial),
+      isbn: formData.isbn,
+      anoedicion: Number(formData.anoedicion),
+      codigoeditorial: Number(formData.codigoeditorial),
       id_categoria: Number(formData.id_categoria),
       sinopsis: formData.sinopsis,
       portada: formData.portada || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop',
-      id_autor: formData.selectedAutores[0], // For simplicity, just use first selected author
+      id_autor: formData.selectedAutores[0],
     };
 
     try {
@@ -132,8 +132,8 @@ function BookForm() {
               </label>
               <input
                 type="text"
-                name="ISBN"
-                value={formData.ISBN}
+                name="isbn"
+                value={formData.isbn}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                 placeholder="978-3-16-148410-0"
@@ -146,8 +146,8 @@ function BookForm() {
               </label>
               <input
                 type="number"
-                name="anio_edicion"
-                value={formData.anio_edicion}
+                name="anoedicion"
+                value={formData.anoedicion}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                 placeholder="Año de publicación"
@@ -161,8 +161,8 @@ function BookForm() {
                 Editorial <span className="text-red-500">*</span>
               </label>
               <select
-                name="codigo_editorial"
-                value={formData.codigo_editorial}
+                name="codigoeditorial"
+                value={formData.codigoeditorial}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
               >
