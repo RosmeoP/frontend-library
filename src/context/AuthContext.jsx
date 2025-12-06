@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -7,6 +8,7 @@ export function AuthProvider({ children }) {
     const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -16,31 +18,30 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const login = (email, password) => {
-    // Simple mock authentication
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      setUser({ id: foundUser.id, name: foundUser.name, email: foundUser.email });
+  const login = async (email, password) => {
+    try {
+      setLoading(true);
+      const userData = await api.auth.login(email, password);
+      setUser(userData);
       return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message || 'Invalid email or password' };
+    } finally {
+      setLoading(false);
     }
-    return { success: false, error: 'Invalid email or password' };
   };
 
-  const register = (name, email, password) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    if (users.find(u => u.email === email)) {
-      return { success: false, error: 'Email already registered' };
+  const register = async (userData) => {
+    try {
+      setLoading(true);
+      const newUser = await api.auth.register(userData);
+      setUser(newUser);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message || 'Registration failed' };
+    } finally {
+      setLoading(false);
     }
-
-    const newUser = { id: Date.now(), name, email, password };
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    setUser({ id: newUser.id, name: newUser.name, email: newUser.email });
-    return { success: true };
   };
 
   const logout = () => {
@@ -48,7 +49,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

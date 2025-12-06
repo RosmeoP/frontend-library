@@ -1,318 +1,321 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import {
-  libros as initialLibros,
-  autores as initialAutores,
-  editoriales as initialEditoriales,
-  categorias as initialCategorias,
-  autorLibro as initialAutorLibro,
-  ejemplares as initialEjemplares,
-  usuarios as initialUsuarios,
-  prestamos as initialPrestamos,
-  reservas as initialReservas,
-  multas as initialMultas,
-  getLibroCompleto,
-} from '../data/libraryData';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { api } from '../services/api';
 
 const BooksContext = createContext(null);
 
 export function BooksProvider({ children }) {
-  // Main data states
-  const [libros, setLibros] = useState(() => {
-    const saved = localStorage.getItem('libros');
-    return saved ? JSON.parse(saved) : initialLibros;
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const [books, setBooks] = useState([]);
+  const [libros, setLibros] = useState([]);
+  const [autores, setAutores] = useState([]);
+  const [editoriales, setEditoriales] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [ejemplares, setEjemplares] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [prestamos, setPrestamos] = useState([]);
+  const [reservas, setReservas] = useState([]);
+  const [multas, setMultas] = useState([]);
 
-  const [autores, setAutores] = useState(() => {
-    const saved = localStorage.getItem('autores');
-    return saved ? JSON.parse(saved) : initialAutores;
-  });
-
-  const [editoriales, setEditoriales] = useState(() => {
-    const saved = localStorage.getItem('editoriales');
-    return saved ? JSON.parse(saved) : initialEditoriales;
-  });
-
-  const [categorias, setCategorias] = useState(() => {
-    const saved = localStorage.getItem('categorias');
-    return saved ? JSON.parse(saved) : initialCategorias;
-  });
-
-  const [autorLibro, setAutorLibro] = useState(() => {
-    const saved = localStorage.getItem('autorLibro');
-    return saved ? JSON.parse(saved) : initialAutorLibro;
-  });
-
-  const [ejemplares, setEjemplares] = useState(() => {
-    const saved = localStorage.getItem('ejemplares');
-    return saved ? JSON.parse(saved) : initialEjemplares;
-  });
-
-  const [usuarios, setUsuarios] = useState(() => {
-    const saved = localStorage.getItem('usuarios');
-    return saved ? JSON.parse(saved) : initialUsuarios;
-  });
-
-  const [prestamos, setPrestamos] = useState(() => {
-    const saved = localStorage.getItem('prestamos');
-    return saved ? JSON.parse(saved) : initialPrestamos;
-  });
-
-  const [reservas, setReservas] = useState(() => {
-    const saved = localStorage.getItem('reservas');
-    return saved ? JSON.parse(saved) : initialReservas;
-  });
-
-  const [multas, setMultas] = useState(() => {
-    const saved = localStorage.getItem('multas');
-    return saved ? JSON.parse(saved) : initialMultas;
-  });
-
-  // Persist to localStorage
-  useEffect(() => { localStorage.setItem('libros', JSON.stringify(libros)); }, [libros]);
-  useEffect(() => { localStorage.setItem('autores', JSON.stringify(autores)); }, [autores]);
-  useEffect(() => { localStorage.setItem('editoriales', JSON.stringify(editoriales)); }, [editoriales]);
-  useEffect(() => { localStorage.setItem('categorias', JSON.stringify(categorias)); }, [categorias]);
-  useEffect(() => { localStorage.setItem('autorLibro', JSON.stringify(autorLibro)); }, [autorLibro]);
-  useEffect(() => { localStorage.setItem('ejemplares', JSON.stringify(ejemplares)); }, [ejemplares]);
-  useEffect(() => { localStorage.setItem('usuarios', JSON.stringify(usuarios)); }, [usuarios]);
-  useEffect(() => { localStorage.setItem('prestamos', JSON.stringify(prestamos)); }, [prestamos]);
-  useEffect(() => { localStorage.setItem('reservas', JSON.stringify(reservas)); }, [reservas]);
-  useEffect(() => { localStorage.setItem('multas', JSON.stringify(multas)); }, [multas]);
-
-  // Get books with all related data (for display)
-  const books = libros.map(libro => getLibroCompleto(libro, {
-    autores,
-    editoriales,
-    categorias,
-    autorLibro,
-    ejemplares,
-  }));
-
-  // CRUD Operations for LIBROS
-  const addBook = (bookData) => {
-    const newId = Math.max(...libros.map(l => l.id_libro), 0) + 1;
-    const newLibro = {
-      id_libro: newId,
-      titulo: bookData.titulo,
-      ISBN: bookData.ISBN,
-      anio_edicion: bookData.anio_edicion,
-      codigo_editorial: bookData.codigo_editorial,
-      id_categoria: bookData.id_categoria,
-      sinopsis: bookData.sinopsis,
-      portada: bookData.portada || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop',
-    };
-    setLibros(prev => [...prev, newLibro]);
-
-    // Add autor-libro relationship
-    if (bookData.id_autor) {
-      setAutorLibro(prev => [...prev, { id_autor: bookData.id_autor, id_libro: newId }]);
+  const fetchAllData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [
+        booksData,
+        authorsData,
+        publishersData,
+        categoriesData,
+        usersData,
+        loansData,
+        reservationsData,
+        finesData,
+        copiesData
+      ] = await Promise.all([
+        api.books.getAll(),
+        api.authors.getAll(),
+        api.publishers.getAll(),
+        api.categories.getAll(),
+        api.users.getAll(),
+        api.loans.getAll(),
+        api.reservations.getAll(),
+        api.fines.getAll(),
+        api.books.getAllCopies()
+      ]);
+      
+      setBooks(booksData);
+      setLibros(booksData);
+      setAutores(authorsData);
+      setEditoriales(publishersData);
+      setCategorias(categoriesData);
+      setUsuarios(usersData);
+      setPrestamos(loansData);
+      setReservas(reservationsData);
+      setMultas(finesData);
+      setEjemplares(copiesData);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    // Add initial ejemplar
-    const newEjemplarId = Math.max(...ejemplares.map(e => e.id_ejemplar), 0) + 1;
-    setEjemplares(prev => [...prev, {
-      id_ejemplar: newEjemplarId,
-      id_libro: newId,
-      codigo_barras: `LIB-${String(newId).padStart(3, '0')}-001`,
-      estado: 'Disponible',
-      nota_estado: null,
-    }]);
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
-    return newLibro;
-  };
-
-  const updateBook = (id, updatedData) => {
-    setLibros(prev => prev.map(libro =>
-      libro.id_libro === id ? { ...libro, ...updatedData } : libro
-    ));
-
-    // Update autor-libro relationship if changed
-    if (updatedData.id_autor) {
-      setAutorLibro(prev => {
-        const filtered = prev.filter(al => al.id_libro !== id);
-        return [...filtered, { id_autor: updatedData.id_autor, id_libro: id }];
+  const addBook = async (bookData) => {
+    try {
+      const newBook = await api.books.create({
+        titulo: bookData.titulo,
+        isbn: bookData.ISBN || bookData.isbn,
+        anoedicion: bookData.anio_edicion || bookData.anoedicion,
+        codigoeditorial: bookData.codigo_editorial || bookData.codigoeditorial,
+        id_categoria: bookData.id_categoria,
+        sinopsis: bookData.sinopsis
       });
+      await fetchAllData();
+      return newBook;
+    } catch (err) {
+      console.error('Error adding book:', err);
+      throw err;
     }
   };
 
-  const deleteBook = (id) => {
-    setLibros(prev => prev.filter(libro => libro.id_libro !== id));
-    setAutorLibro(prev => prev.filter(al => al.id_libro !== id));
-    setEjemplares(prev => prev.filter(e => e.id_libro !== id));
+  const updateBook = async (id, updatedData) => {
+    try {
+      await api.books.update(id, {
+        titulo: updatedData.titulo,
+        isbn: updatedData.ISBN || updatedData.isbn,
+        anoedicion: updatedData.anio_edicion || updatedData.anoedicion,
+        codigoeditorial: updatedData.codigo_editorial || updatedData.codigoeditorial,
+        id_categoria: updatedData.id_categoria,
+        sinopsis: updatedData.sinopsis
+      });
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error updating book:', err);
+      throw err;
+    }
+  };
+
+  const deleteBook = async (id) => {
+    try {
+      await api.books.delete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting book:', err);
+      throw err;
+    }
   };
 
   const getBook = (id) => {
-    const libro = libros.find(l => l.id_libro === id);
-    if (!libro) return null;
-    return getLibroCompleto(libro, { autores, editoriales, categorias, autorLibro, ejemplares });
+    return books.find(b => b.id_libro === id);
   };
 
-  // CRUD for EJEMPLARES
-  const addEjemplar = (idLibro) => {
-    const libroEjemplares = ejemplares.filter(e => e.id_libro === idLibro);
-    const newId = Math.max(...ejemplares.map(e => e.id_ejemplar), 0) + 1;
-    const newEjemplar = {
-      id_ejemplar: newId,
-      id_libro: idLibro,
-      codigo_barras: `LIB-${String(idLibro).padStart(3, '0')}-${String(libroEjemplares.length + 1).padStart(3, '0')}`,
-      estado: 'Disponible',
-      nota_estado: null,
-    };
-    setEjemplares(prev => [...prev, newEjemplar]);
-    return newEjemplar;
-  };
-
-  const updateEjemplar = (id, updatedData) => {
-    setEjemplares(prev => prev.map(e =>
-      e.id_ejemplar === id ? { ...e, ...updatedData } : e
-    ));
-  };
-
-  // CRUD for AUTORES
-  const addAutor = (autorData) => {
-    const newId = Math.max(...autores.map(a => a.id_autor), 0) + 1;
-    const newAutor = { id_autor: newId, ...autorData };
-    setAutores(prev => [...prev, newAutor]);
-    return newAutor;
-  };
-
-  // CRUD for CATEGORIAS
-  const addCategoria = (catData) => {
-    const newId = Math.max(...categorias.map(c => c.id_categoria), 0) + 1;
-    const newCategoria = { id_categoria: newId, ...catData };
-    setCategorias(prev => [...prev, newCategoria]);
-    return newCategoria;
-  };
-
-  // CRUD for EDITORIALES
-  const addEditorial = (editData) => {
-    const newId = Math.max(...editoriales.map(e => e.id_editorial), 0) + 1;
-    const newEditorial = { id_editorial: newId, ...editData };
-    setEditoriales(prev => [...prev, newEditorial]);
-    return newEditorial;
-  };
-
-  // CRUD for PRESTAMOS (Loans)
-  const addPrestamo = (prestamoData) => {
-    const newId = Math.max(...prestamos.map(p => p.id_prestamo), 0) + 1;
-    const newPrestamo = {
-      id_prestamo: newId,
-      id_ejemplar: prestamoData.id_ejemplar,
-      id_usuario: prestamoData.id_usuario,
-      fecha_prestamo: new Date().toISOString(),
-      fecha_devolucion_esperada: prestamoData.fecha_devolucion_esperada,
-      fecha_devuelto: null,
-      estado_prestamo: 'Activo',
-    };
-    
-    // Update the ejemplar status to 'Prestado'
-    setEjemplares(prev => prev.map(e => 
-      e.id_ejemplar === prestamoData.id_ejemplar 
-        ? { ...e, estado: 'Prestado' } 
-        : e
-    ));
-    
-    setPrestamos(prev => [...prev, newPrestamo]);
-    return newPrestamo;
-  };
-
-  const returnPrestamo = (idPrestamo) => {
-    const prestamo = prestamos.find(p => p.id_prestamo === idPrestamo);
-    if (!prestamo) return null;
-
-    const fechaDevuelto = new Date().toISOString().split('T')[0];
-    const fechaEsperada = new Date(prestamo.fecha_devolucion_esperada);
-    const fechaActual = new Date(fechaDevuelto);
-    
-    // Check if overdue and create multa if needed
-    if (fechaActual > fechaEsperada) {
-      const diasRetraso = Math.ceil((fechaActual - fechaEsperada) / (1000 * 60 * 60 * 24));
-      const montoMulta = diasRetraso * 2.00; // $2 per day
-      const newMultaId = Math.max(...multas.map(m => m.id_multa), 0) + 1;
-      setMultas(prev => [...prev, {
-        id_multa: newMultaId,
-        id_prestamo: idPrestamo,
-        monto: montoMulta,
-        pagado: false,
-        fecha_pago: null,
-      }]);
+  const addEjemplar = async (idLibro, ubicacion) => {
+    try {
+      const newCopy = await api.books.addCopy(idLibro, { ubicacion, estado: 'Disponible' });
+      await fetchAllData();
+      return newCopy;
+    } catch (err) {
+      console.error('Error adding copy:', err);
+      throw err;
     }
-
-    // Update prestamo status
-    setPrestamos(prev => prev.map(p => 
-      p.id_prestamo === idPrestamo 
-        ? { ...p, fecha_devuelto: fechaDevuelto, estado_prestamo: 'Finalizado' } 
-        : p
-    ));
-
-    // Update ejemplar status back to 'Disponible'
-    setEjemplares(prev => prev.map(e => 
-      e.id_ejemplar === prestamo.id_ejemplar 
-        ? { ...e, estado: 'Disponible' } 
-        : e
-    ));
-
-    return prestamo;
   };
 
-  const getPrestamo = (idPrestamo) => {
-    return prestamos.find(p => p.id_prestamo === idPrestamo);
+  const addPrestamo = async (prestamoData) => {
+    try {
+      const result = await api.loans.create({
+        id_usuario: prestamoData.id_usuario,
+        id_ejemplar: prestamoData.id_ejemplar,
+        dias_prestamo: prestamoData.dias_prestamo || 14
+      });
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error creating loan:', err);
+      throw err;
+    }
   };
 
-  // Helper to get full prestamo info with related data
-  const getPrestamoCompleto = (prestamo) => {
-    const ejemplar = ejemplares.find(e => e.id_ejemplar === prestamo.id_ejemplar);
-    const libro = ejemplar ? libros.find(l => l.id_libro === ejemplar.id_libro) : null;
-    const usuario = usuarios.find(u => u.id_usuario === prestamo.id_usuario);
-    
-    return {
-      ...prestamo,
-      ejemplar,
-      libro,
-      usuario,
-      libroTitulo: libro?.titulo || 'Desconocido',
-      usuarioNombre: usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Desconocido',
-      codigoBarras: ejemplar?.codigo_barras || 'N/A',
-    };
+  const returnPrestamo = async (idPrestamo) => {
+    try {
+      const result = await api.loans.return(idPrestamo);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error returning loan:', err);
+      throw err;
+    }
   };
 
-  // Get all prestamos with full info
-  const prestamosCompletos = prestamos.map(getPrestamoCompleto);
+  const renewPrestamo = async (idPrestamo, diasAdicionales = 7) => {
+    try {
+      const result = await api.loans.renew(idPrestamo, diasAdicionales);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error renewing loan:', err);
+      throw err;
+    }
+  };
+
+  const addReserva = async (reservaData) => {
+    try {
+      const result = await api.reservations.create(reservaData);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error creating reservation:', err);
+      throw err;
+    }
+  };
+
+  const completeReserva = async (id) => {
+    try {
+      await api.reservations.complete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error completing reservation:', err);
+      throw err;
+    }
+  };
+
+  const cancelReserva = async (id) => {
+    try {
+      await api.reservations.cancel(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error cancelling reservation:', err);
+      throw err;
+    }
+  };
+
+  const payMulta = async (id) => {
+    try {
+      await api.fines.pay(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error paying fine:', err);
+      throw err;
+    }
+  };
+
+  const deleteMulta = async (id) => {
+    try {
+      await api.fines.delete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting fine:', err);
+      throw err;
+    }
+  };
+
+  const addUsuario = async (userData) => {
+    try {
+      const result = await api.users.create(userData);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error creating user:', err);
+      throw err;
+    }
+  };
+
+  const updateUsuario = async (id, userData) => {
+    try {
+      await api.users.update(id, userData);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error updating user:', err);
+      throw err;
+    }
+  };
+
+  const deleteUsuario = async (id) => {
+    try {
+      await api.users.delete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      throw err;
+    }
+  };
+
+  const addCategoria = async (catData) => {
+    try {
+      const result = await api.categories.create(catData);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error creating category:', err);
+      throw err;
+    }
+  };
+
+  const updateCategoria = async (id, catData) => {
+    try {
+      await api.categories.update(id, catData);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error updating category:', err);
+      throw err;
+    }
+  };
+
+  const deleteCategoria = async (id) => {
+    try {
+      await api.categories.delete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      throw err;
+    }
+  };
+
+  const prestamosCompletos = prestamos.map(p => ({
+    ...p,
+    libroTitulo: p.titulo || 'Desconocido',
+    usuarioNombre: p.nombre && p.apellido ? `${p.nombre} ${p.apellido}` : 'Desconocido',
+  }));
 
   const value = {
-    // Processed books (with relationships)
+    loading,
+    error,
     books,
-    // Raw data
     libros,
     autores,
     editoriales,
     categorias,
-    autorLibro,
     ejemplares,
     usuarios,
     prestamos,
     reservas,
     multas,
-    // Processed data
     prestamosCompletos,
-    // Book operations
+    refetch: fetchAllData,
     addBook,
     updateBook,
     deleteBook,
     getBook,
-    // Ejemplar operations
     addEjemplar,
-    updateEjemplar,
-    // Prestamo operations
     addPrestamo,
     returnPrestamo,
-    getPrestamo,
-    getPrestamoCompleto,
-    // Other operations
-    addAutor,
+    renewPrestamo,
+    addReserva,
+    completeReserva,
+    cancelReserva,
+    payMulta,
+    deleteMulta,
+    addUsuario,
+    updateUsuario,
+    deleteUsuario,
     addCategoria,
-    addEditorial,
-    // Setters for direct updates
+    updateCategoria,
+    deleteCategoria,
     setUsuarios,
     setPrestamos,
     setReservas,
