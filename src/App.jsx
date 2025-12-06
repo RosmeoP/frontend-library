@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { BooksProvider } from './context/BooksContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar/Sidebar';
 import TopBar from './components/TopBar/TopBar';
 import Home from './pages/Home';
@@ -39,17 +40,17 @@ function App() {
         <BrowserRouter>
           <AppLayout>
             <Routes>
-              <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/books/new" element={<BookForm />} />
-              <Route path="/books/edit/:id" element={<BookForm />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/loans" element={<Loans />} />
-              <Route path="/reservations" element={<Reservations />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/fines" element={<Fines />} />
-              <Route path="/settings" element={<Home />} />
+              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path="/books/new" element={<ProtectedRoute><BookForm /></ProtectedRoute>} />
+              <Route path="/books/edit/:id" element={<ProtectedRoute><BookForm /></ProtectedRoute>} />
+              <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+              <Route path="/loans" element={<ProtectedRoute><Loans /></ProtectedRoute>} />
+              <Route path="/reservations" element={<ProtectedRoute><Reservations /></ProtectedRoute>} />
+              <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+              <Route path="/fines" element={<ProtectedRoute><Fines /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             </Routes>
           </AppLayout>
         </BrowserRouter>
