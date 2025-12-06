@@ -1,17 +1,34 @@
 import express from 'express';
 import { query } from '../db/index.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const result = await query(`
-      SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
-      FROM reservas r
-      JOIN usuario u ON r.id_usuario = u.id_usuario
-      JOIN libros l ON r.id_libro = l.id_libro
-      ORDER BY r.fecha_solicitud DESC
-    `);
+    const user = req.user;
+    const adminRoles = ['Administrativo', 'Bibliotecario'];
+    const isAdmin = adminRoles.includes(user.tipo_usuario);
+
+    let result;
+    if (isAdmin) {
+      result = await query(`
+        SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
+        FROM reservas r
+        JOIN usuario u ON r.id_usuario = u.id_usuario
+        JOIN libros l ON r.id_libro = l.id_libro
+        ORDER BY r.fecha_solicitud DESC
+      `);
+    } else {
+      result = await query(`
+        SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
+        FROM reservas r
+        JOIN usuario u ON r.id_usuario = u.id_usuario
+        JOIN libros l ON r.id_libro = l.id_libro
+        WHERE r.id_usuario = $1
+        ORDER BY r.fecha_solicitud DESC
+      `, [user.id_usuario]);
+    }
     res.json(result.rows);
   } catch (err) {
     console.error(err);

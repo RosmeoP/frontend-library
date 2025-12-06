@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useBooks } from '../context/BooksContext';
+import { useAuth } from '../context/AuthContext';
 
 function Reservations() {
   const { reservas, setReservas, usuarios, libros, ejemplares } = useBooks();
+  const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
   const [showNewReservation, setShowNewReservation] = useState(false);
   const [newReservation, setNewReservation] = useState({
@@ -93,18 +95,24 @@ function Reservations() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Reservas</h1>
-          <p className="text-slate-500 mt-1">Gestiona las reservas de libros</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {isAdmin() ? 'Reservas' : 'Mis Reservas'}
+          </h1>
+          <p className="text-slate-500 mt-1">
+            {isAdmin() ? 'Gestiona las reservas de libros' : 'Historial de tus reservas'}
+          </p>
         </div>
-        <button
-          onClick={() => setShowNewReservation(true)}
-          className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Nueva Reserva
-        </button>
+        {isAdmin() && (
+          <button
+            onClick={() => setShowNewReservation(true)}
+            className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl hover:bg-slate-800 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva Reserva
+          </button>
+        )}
       </div>
 
       {/* Stats Cards */}
