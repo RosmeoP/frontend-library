@@ -1,0 +1,605 @@
+CREATE DATABASE BibliotecaDB;
+GO
+
+USE BibliotecaDB;
+GO
+
+CREATE TABLE AUTOR (
+    Id_autor INT PRIMARY KEY IDENTITY(1,1),
+    Nombres VARCHAR(100),
+    Apellidos VARCHAR(100),
+    Nacionalidad VARCHAR(50)
+);
+
+CREATE TABLE EDITORIAL (
+    Id_editorial INT PRIMARY KEY IDENTITY(1,1),
+    Nombre VARCHAR(100),
+    Pais VARCHAR(50),
+    Email_contacto VARCHAR(100)
+);
+
+CREATE TABLE CATEGORIA (
+    Id_categoria INT PRIMARY KEY IDENTITY(1,1),
+    Nombre VARCHAR(100),
+    Descripcion TEXT
+);
+
+CREATE TABLE LIBROS (
+    Id_libro INT PRIMARY KEY IDENTITY(1,1),
+    titulo VARCHAR(200),
+    ISBN VARCHAR(20) UNIQUE,
+    AñoEdicion INT,
+    CodigoEditorial INT,
+    Id_categoria INT,
+    Sinopsis TEXT,
+    FOREIGN KEY (CodigoEditorial) REFERENCES EDITORIAL(Id_editorial),
+    FOREIGN KEY (Id_categoria) REFERENCES CATEGORIA(Id_categoria)
+);
+
+CREATE TABLE EJEMPLAR (
+    Id_ejemplar INT PRIMARY KEY IDENTITY(1,1),
+    Id_libro INT,
+    Codigo_Barras VARCHAR(50) UNIQUE,
+    Estado VARCHAR(20) CHECK (Estado IN ('Disponible', 'Prestado', 'Reparacion', 'Perdido')),
+    Nota_Estado VARCHAR(200),
+    FOREIGN KEY (Id_libro) REFERENCES LIBROS(Id_libro)
+);
+
+CREATE TABLE USUARIO (
+    Id_usuario INT PRIMARY KEY IDENTITY(1,1),
+    carnet VARCHAR(20) UNIQUE,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    email VARCHAR(100),
+    telefono VARCHAR(20),
+    Tipo_Usuario VARCHAR(20) CHECK (Tipo_Usuario IN ('Estudiante', 'Profesor', 'Administrativo')),
+    Estado VARCHAR(20) CHECK (Estado IN ('Activo', 'Suspendido'))
+);
+
+CREATE TABLE PRESTAMOS (
+    Id_prestamo INT PRIMARY KEY IDENTITY(1,1),
+    Id_ejemplar INT,
+    Id_usuario INT,
+    fecha_prestamo DATETIME,
+    fecha_devolucion_esperada DATE,
+    fecha_devuelto DATE,
+    estado_prestamo VARCHAR(20) CHECK (estado_prestamo IN ('Activo', 'Finalizado', 'Vencido')),
+    FOREIGN KEY (Id_ejemplar) REFERENCES EJEMPLAR(Id_ejemplar),
+    FOREIGN KEY (Id_usuario) REFERENCES USUARIO(Id_usuario)
+);
+
+CREATE TABLE RESERVAS (
+    Id_reserva INT PRIMARY KEY IDENTITY(1,1),
+    Id_libro INT,
+    Id_usuario INT,
+    fecha_solicitud DATETIME,
+    estado VARCHAR(30) CHECK (estado IN ('Pendiente', 'Listo para recoger', 'Cancelado')),
+    FOREIGN KEY (Id_libro) REFERENCES LIBROS(Id_libro),
+    FOREIGN KEY (Id_usuario) REFERENCES USUARIO(Id_usuario)
+);
+
+CREATE TABLE MULTAS (
+    Id_multa INT PRIMARY KEY IDENTITY(1,1),
+    Id_prestamo INT,
+    Monto DECIMAL(10,2),
+    Pagado BIT,
+    Fecha_pago DATETIME,
+    FOREIGN KEY (Id_prestamo) REFERENCES PRESTAMOS(Id_prestamo)
+);
+
+CREATE TABLE AUTOR_LIBRO (
+    Id_autor INT,
+    Id_libro INT,
+    PRIMARY KEY (Id_autor, Id_libro),
+    FOREIGN KEY (Id_autor) REFERENCES AUTOR(Id_autor),
+    FOREIGN KEY (Id_libro) REFERENCES LIBROS(Id_libro)
+);
+GO
+
+CREATE TRIGGER trg_ActualizarEstadoEjemplar_AlPrestar
+ON PRESTAMOS
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE EJEMPLAR
+    SET Estado = 'Prestado'
+    FROM EJEMPLAR E
+    INNER JOIN inserted I ON E.Id_ejemplar = I.Id_ejemplar;
+END;
+GO
+
+CREATE TRIGGER trg_ActualizarEstadoEjemplar_AlDevolver
+ON PRESTAMOS
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF UPDATE(fecha_devuelto)
+    BEGIN
+        UPDATE EJEMPLAR
+        SET Estado = 'Disponible'
+        FROM EJEMPLAR E
+        INNER JOIN inserted I ON E.Id_ejemplar = I.Id_ejemplar
+        WHERE I.fecha_devuelto IS NOT NULL;
+    END;
+END;
+GO
+
+CREATE TRIGGER trg_CrearMulta_PorRetraso
+ON PRESTAMOS
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF UPDATE(fecha_devuelto)
+    BEGIN
+        DECLARE @MontoMultaDiaria DECIMAL(10,2) = 0.50;
+        
+        INSERT INTO MULTAS (Id_prestamo, Monto, Pagado, Fecha_pago)
+        SELECT 
+            I.Id_prestamo,
+            DATEDIFF(DAY, I.fecha_devolucion_esperada, I.fecha_devuelto) * @MontoMultaDiaria,
+            0,
+            NULL
+        FROM inserted I
+        WHERE I.fecha_devuelto IS NOT NULL
+          AND I.fecha_devuelto > I.fecha_devolucion_esperada;
+    END;
+END;
+GO
+
+CREATE TRIGGER trg_ValidarUsuarioActivo
+ON PRESTAMOS
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF EXISTS (
+        SELECT 1 
+        FROM inserted I
+        INNER JOIN USUARIO U ON I.Id_usuario = U.Id_usuario
+        WHERE U.Estado = 'Suspendido'
+    )
+    BEGIN
+        RAISERROR('No se puede realizar el préstamo. El usuario está suspendido.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+    
+    INSERT INTO PRESTAMOS (Id_ejemplar, Id_usuario, fecha_prestamo, fecha_devolucion_esperada, fecha_devuelto, estado_prestamo)
+    SELECT Id_ejemplar, Id_usuario, fecha_prestamo, fecha_devolucion_esperada, fecha_devuelto, estado_prestamo
+    FROM inserted;
+END;
+GO
+
+CREATE TRIGGER trg_ValidarDisponibilidad
+ON PRESTAMOS
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF EXISTS (
+        SELECT 1 
+        FROM inserted I
+        INNER JOIN EJEMPLAR E ON I.Id_ejemplar = E.Id_ejemplar
+        WHERE E.Estado != 'Disponible'
+    )
+    BEGIN
+        RAISERROR('El ejemplar no está disponible para préstamo.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+END;
+GO
+
+CREATE TRIGGER trg_ActualizarEstadoPrestamo
+ON PRESTAMOS
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE PRESTAMOS
+    SET estado_prestamo = 'Vencido'
+    FROM PRESTAMOS P
+    INNER JOIN inserted I ON P.Id_prestamo = I.Id_prestamo
+    WHERE CAST(GETDATE() AS DATE) > P.fecha_devolucion_esperada
+      AND P.fecha_devuelto IS NULL
+      AND P.estado_prestamo = 'Activo';
+END;
+GO
+
+CREATE PROCEDURE sp_RegistrarPrestamo
+    @Id_ejemplar INT,
+    @Id_usuario INT,
+    @DiasLimite INT = 15
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        IF EXISTS (
+            SELECT 1 FROM MULTAS M
+            INNER JOIN PRESTAMOS P ON M.Id_prestamo = P.Id_prestamo
+            WHERE P.Id_usuario = @Id_usuario AND M.Pagado = 0
+        )
+        BEGIN
+            RAISERROR('El usuario tiene multas pendientes de pago.', 16, 1);
+            RETURN;
+        END;
+        
+        INSERT INTO PRESTAMOS (
+            Id_ejemplar, 
+            Id_usuario, 
+            fecha_prestamo, 
+            fecha_devolucion_esperada, 
+            fecha_devuelto,
+            estado_prestamo
+        )
+        VALUES (
+            @Id_ejemplar,
+            @Id_usuario,
+            GETDATE(),
+            DATEADD(DAY, @DiasLimite, GETDATE()),
+            NULL,
+            'Activo'
+        );
+        
+        SELECT 
+            Id_prestamo,
+            fecha_prestamo,
+            fecha_devolucion_esperada,
+            'Préstamo registrado exitosamente' AS Mensaje
+        FROM PRESTAMOS
+        WHERE Id_prestamo = SCOPE_IDENTITY();
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH;
+END;
+GO
+
+CREATE PROCEDURE sp_DevolverLibro
+    @Id_prestamo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM PRESTAMOS 
+            WHERE Id_prestamo = @Id_prestamo 
+            AND fecha_devuelto IS NULL
+        )
+        BEGIN
+            RAISERROR('El préstamo no existe o ya fue devuelto.', 16, 1);
+            RETURN;
+        END;
+        
+        UPDATE PRESTAMOS
+        SET fecha_devuelto = GETDATE(),
+            estado_prestamo = 'Finalizado'
+        WHERE Id_prestamo = @Id_prestamo;
+        
+        SELECT 
+            P.Id_prestamo,
+            P.fecha_devuelto,
+            CASE 
+                WHEN M.Id_multa IS NOT NULL THEN M.Monto 
+                ELSE 0 
+            END AS Multa_Generada,
+            CASE 
+                WHEN M.Id_multa IS NOT NULL THEN 'Devolución con multa'
+                ELSE 'Devolución exitosa'
+            END AS Mensaje
+        FROM PRESTAMOS P
+        LEFT JOIN MULTAS M ON P.Id_prestamo = M.Id_prestamo
+        WHERE P.Id_prestamo = @Id_prestamo;
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH;
+END;
+GO
+
+CREATE PROCEDURE sp_CalcularMulta
+    @Id_prestamo INT,
+    @MontoMulta DECIMAL(10,2) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @MontoBase DECIMAL(10,2) = 0.50;
+    DECLARE @DiasRetraso INT;
+    DECLARE @TipoUsuario VARCHAR(50);
+    DECLARE @Multiplicador DECIMAL(5,2);
+    
+    SELECT 
+        @DiasRetraso = DATEDIFF(DAY, P.fecha_devolucion_esperada, ISNULL(P.fecha_devuelto, GETDATE())),
+        @TipoUsuario = U.Tipo_Usuario
+    FROM PRESTAMOS P
+    INNER JOIN USUARIO U ON P.Id_usuario = U.Id_usuario
+    WHERE P.Id_prestamo = @Id_prestamo;
+    
+    IF @DiasRetraso <= 0
+    BEGIN
+        SET @MontoMulta = 0;
+        RETURN;
+    END;
+    
+    SET @Multiplicador = CASE @TipoUsuario
+        WHEN 'Estudiante' THEN 1.0
+        WHEN 'Profesor' THEN 0.5
+        WHEN 'Administrativo' THEN 0.75
+        ELSE 1.0
+    END;
+    
+    SET @MontoMulta = @DiasRetraso * @MontoBase * @Multiplicador;
+    
+    SELECT 
+        @Id_prestamo AS Id_prestamo,
+        @DiasRetraso AS Dias_Retraso,
+        @TipoUsuario AS Tipo_Usuario,
+        @MontoMulta AS Monto_Multa;
+END;
+GO
+
+CREATE PROCEDURE sp_RenovarPrestamo
+    @Id_prestamo INT,
+    @DiasExtra INT = 7
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF NOT EXISTS (
+            SELECT 1 FROM PRESTAMOS 
+            WHERE Id_prestamo = @Id_prestamo 
+            AND fecha_devuelto IS NULL
+            AND estado_prestamo = 'Activo'
+        )
+        BEGIN
+            RAISERROR('El préstamo no puede ser renovado.', 16, 1);
+            RETURN;
+        END;
+        
+        UPDATE PRESTAMOS
+        SET fecha_devolucion_esperada = DATEADD(DAY, @DiasExtra, fecha_devolucion_esperada)
+        WHERE Id_prestamo = @Id_prestamo;
+        
+        SELECT 
+            Id_prestamo,
+            fecha_devolucion_esperada AS Nueva_Fecha_Limite,
+            'Préstamo renovado exitosamente' AS Mensaje
+        FROM PRESTAMOS
+        WHERE Id_prestamo = @Id_prestamo;
+        
+    END TRY
+    BEGIN CATCH
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH;
+END;
+GO
+
+CREATE PROCEDURE sp_BuscarLibrosDisponibles
+    @Criterio VARCHAR(200) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        L.Id_libro,
+        L.titulo,
+        L.ISBN,
+        STRING_AGG(A.Nombres + ' ' + A.Apellidos, ', ') AS Autores,
+        C.Nombre AS Categoria,
+        E.Nombre AS Editorial,
+        COUNT(EJ.Id_ejemplar) AS Ejemplares_Disponibles
+    FROM LIBROS L
+    LEFT JOIN AUTOR_LIBRO AL ON L.Id_libro = AL.Id_libro
+    LEFT JOIN AUTOR A ON AL.Id_autor = A.Id_autor
+    LEFT JOIN CATEGORIA C ON L.Id_categoria = C.Id_categoria
+    LEFT JOIN EDITORIAL E ON L.CodigoEditorial = E.Id_editorial
+    LEFT JOIN EJEMPLAR EJ ON L.Id_libro = EJ.Id_libro AND EJ.Estado = 'Disponible'
+    WHERE (@Criterio IS NULL OR 
+           L.titulo LIKE '%' + @Criterio + '%' OR
+           A.Nombres LIKE '%' + @Criterio + '%' OR
+           A.Apellidos LIKE '%' + @Criterio + '%' OR
+           C.Nombre LIKE '%' + @Criterio + '%')
+    GROUP BY L.Id_libro, L.titulo, L.ISBN, C.Nombre, E.Nombre
+    HAVING COUNT(EJ.Id_ejemplar) > 0
+    ORDER BY L.titulo;
+END;
+GO
+
+CREATE PROCEDURE sp_ObtenerHistorialUsuario
+    @Id_usuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        U.carnet,
+        U.nombre + ' ' + U.apellido AS Nombre_Completo,
+        U.Tipo_Usuario,
+        U.Estado
+    FROM USUARIO U
+    WHERE U.Id_usuario = @Id_usuario;
+    
+    SELECT 
+        P.Id_prestamo,
+        L.titulo AS Libro,
+        P.fecha_prestamo,
+        P.fecha_devolucion_esperada,
+        P.fecha_devuelto,
+        P.estado_prestamo,
+        ISNULL(M.Monto, 0) AS Multa
+    FROM PRESTAMOS P
+    INNER JOIN EJEMPLAR E ON P.Id_ejemplar = E.Id_ejemplar
+    INNER JOIN LIBROS L ON E.Id_libro = L.Id_libro
+    LEFT JOIN MULTAS M ON P.Id_prestamo = M.Id_prestamo
+    WHERE P.Id_usuario = @Id_usuario
+    ORDER BY P.fecha_prestamo DESC;
+    
+    SELECT 
+        R.Id_reserva,
+        L.titulo AS Libro,
+        R.fecha_solicitud,
+        R.estado
+    FROM RESERVAS R
+    INNER JOIN LIBROS L ON R.Id_libro = L.Id_libro
+    WHERE R.Id_usuario = @Id_usuario
+    ORDER BY R.fecha_solicitud DESC;
+    
+    SELECT 
+        COUNT(*) AS Total_Multas,
+        SUM(M.Monto) AS Monto_Total,
+        SUM(CASE WHEN M.Pagado = 0 THEN M.Monto ELSE 0 END) AS Pendiente_Pago
+    FROM MULTAS M
+    INNER JOIN PRESTAMOS P ON M.Id_prestamo = P.Id_prestamo
+    WHERE P.Id_usuario = @Id_usuario;
+END;
+GO
+
+CREATE VIEW vw_LibrosDisponibles
+AS
+SELECT 
+    L.Id_libro,
+    L.titulo,
+    L.ISBN,
+    L.AñoEdicion,
+    C.Nombre AS Categoria,
+    E.Nombre AS Editorial,
+    COUNT(EJ.Id_ejemplar) AS Ejemplares_Disponibles
+FROM LIBROS L
+LEFT JOIN CATEGORIA C ON L.Id_categoria = C.Id_categoria
+LEFT JOIN EDITORIAL E ON L.CodigoEditorial = E.Id_editorial
+LEFT JOIN EJEMPLAR EJ ON L.Id_libro = EJ.Id_libro AND EJ.Estado = 'Disponible'
+GROUP BY L.Id_libro, L.titulo, L.ISBN, L.AñoEdicion, C.Nombre, E.Nombre
+HAVING COUNT(EJ.Id_ejemplar) > 0;
+GO
+
+CREATE VIEW vw_PrestamosActivos
+AS
+SELECT 
+    P.Id_prestamo,
+    U.carnet,
+    U.nombre + ' ' + U.apellido AS Usuario,
+    U.email,
+    U.telefono,
+    L.titulo AS Libro,
+    L.ISBN,
+    P.fecha_prestamo,
+    P.fecha_devolucion_esperada,
+    DATEDIFF(DAY, CAST(GETDATE() AS DATE), P.fecha_devolucion_esperada) AS Dias_Restantes,
+    P.estado_prestamo
+FROM PRESTAMOS P
+INNER JOIN USUARIO U ON P.Id_usuario = U.Id_usuario
+INNER JOIN EJEMPLAR E ON P.Id_ejemplar = E.Id_ejemplar
+INNER JOIN LIBROS L ON E.Id_libro = L.Id_libro
+WHERE P.fecha_devuelto IS NULL;
+GO
+
+CREATE VIEW vw_PrestamosVencidos
+AS
+SELECT 
+    P.Id_prestamo,
+    U.carnet,
+    U.nombre + ' ' + U.apellido AS Usuario,
+    U.email,
+    U.telefono,
+    U.Tipo_Usuario,
+    L.titulo AS Libro,
+    P.fecha_prestamo,
+    P.fecha_devolucion_esperada,
+    DATEDIFF(DAY, P.fecha_devolucion_esperada, CAST(GETDATE() AS DATE)) AS Dias_Retraso
+FROM PRESTAMOS P
+INNER JOIN USUARIO U ON P.Id_usuario = U.Id_usuario
+INNER JOIN EJEMPLAR E ON P.Id_ejemplar = E.Id_ejemplar
+INNER JOIN LIBROS L ON E.Id_libro = L.Id_libro
+WHERE P.fecha_devuelto IS NULL
+  AND CAST(GETDATE() AS DATE) > P.fecha_devolucion_esperada;
+GO
+
+CREATE VIEW vw_UsuariosConMultas
+AS
+SELECT 
+    U.Id_usuario,
+    U.carnet,
+    U.nombre + ' ' + U.apellido AS Usuario,
+    U.email,
+    U.telefono,
+    COUNT(M.Id_multa) AS Total_Multas,
+    SUM(M.Monto) AS Monto_Total,
+    SUM(CASE WHEN M.Pagado = 0 THEN M.Monto ELSE 0 END) AS Pendiente_Pago
+FROM USUARIO U
+INNER JOIN PRESTAMOS P ON U.Id_usuario = P.Id_usuario
+INNER JOIN MULTAS M ON P.Id_prestamo = M.Id_prestamo
+GROUP BY U.Id_usuario, U.carnet, U.nombre, U.apellido, U.email, U.telefono
+HAVING SUM(CASE WHEN M.Pagado = 0 THEN M.Monto ELSE 0 END) > 0;
+GO
+
+CREATE VIEW vw_CatalogoCompleto
+AS
+SELECT 
+    L.Id_libro,
+    L.titulo,
+    L.ISBN,
+    L.AñoEdicion,
+    STRING_AGG(A.Nombres + ' ' + A.Apellidos, ', ') AS Autores,
+    C.Nombre AS Categoria,
+    C.Descripcion AS Descripcion_Categoria,
+    E.Nombre AS Editorial,
+    E.Pais AS Pais_Editorial,
+    L.Sinopsis,
+    COUNT(DISTINCT EJ.Id_ejemplar) AS Total_Ejemplares,
+    SUM(CASE WHEN EJ.Estado = 'Disponible' THEN 1 ELSE 0 END) AS Disponibles
+FROM LIBROS L
+LEFT JOIN AUTOR_LIBRO AL ON L.Id_libro = AL.Id_libro
+LEFT JOIN AUTOR A ON AL.Id_autor = A.Id_autor
+LEFT JOIN CATEGORIA C ON L.Id_categoria = C.Id_categoria
+LEFT JOIN EDITORIAL E ON L.CodigoEditorial = E.Id_editorial
+LEFT JOIN EJEMPLAR EJ ON L.Id_libro = EJ.Id_libro
+GROUP BY L.Id_libro, L.titulo, L.ISBN, L.AñoEdicion, C.Nombre, C.Descripcion, E.Nombre, E.Pais, L.Sinopsis;
+GO
+
+CREATE VIEW vw_EstadisticasPrestamos
+AS
+SELECT 
+    L.Id_libro,
+    L.titulo,
+    L.ISBN,
+    C.Nombre AS Categoria,
+    COUNT(P.Id_prestamo) AS Total_Prestamos,
+    COUNT(CASE WHEN P.estado_prestamo = 'Activo' THEN 1 END) AS Prestamos_Activos,
+    COUNT(CASE WHEN P.estado_prestamo = 'Finalizado' THEN 1 END) AS Prestamos_Finalizados,
+    COUNT(CASE WHEN P.estado_prestamo = 'Vencido' THEN 1 END) AS Prestamos_Vencidos
+FROM LIBROS L
+LEFT JOIN CATEGORIA C ON L.Id_categoria = C.Id_categoria
+LEFT JOIN EJEMPLAR E ON L.Id_libro = E.Id_libro
+LEFT JOIN PRESTAMOS P ON E.Id_ejemplar = P.Id_ejemplar
+GROUP BY L.Id_libro, L.titulo, L.ISBN, C.Nombre;
+GO
+
+PRINT 'Database, Triggers, Stored Procedures y Views creados exitosamente!';
+GO
