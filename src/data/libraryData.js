@@ -151,6 +151,7 @@ export const usuarios = [
   { id_usuario: 3, carnet: 'PROF-2020-001', nombre: 'Roberto', apellido: 'Silva', email: 'roberto.silva@universidad.edu', telefono: '555-0201', tipo_usuario: 'Profesor', estado: 'Activo' },
   { id_usuario: 4, carnet: 'ADM-2019-001', nombre: 'Ana', apellido: 'Ramírez', email: 'ana.ramirez@universidad.edu', telefono: '555-0301', tipo_usuario: 'Administrativo', estado: 'Activo' },
   { id_usuario: 5, carnet: 'EST-2023-015', nombre: 'Luis', apellido: 'Torres', email: 'luis.torres@universidad.edu', telefono: '555-0103', tipo_usuario: 'Estudiante', estado: 'Suspendido' },
+  { id_usuario: 6, carnet: 'EST-2024-003', nombre: 'Sofia', apellido: 'Hernandez', email: 'sofia.hernandez@universidad.edu', telefono: '555-0104', tipo_usuario: 'Estudiante', estado: 'Activo' },
 ];
 
 // --- TRANSACCIONES ---
