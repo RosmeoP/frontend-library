@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const { nombre, apellido, email, password, telefono, direccion, tipo_usuario } = req.body;
+    const { nombre, apellido, email, password, telefono, direccion, tipo_usuario, carnet } = req.body;
     
     const existing = await query('SELECT id_usuario FROM usuario WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
@@ -48,11 +48,12 @@ router.post('/register', async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const userCarnet = carnet || `USR${Date.now().toString().slice(-6)}`;
     
     const result = await query(
-      `INSERT INTO usuario (nombre, apellido, email, password_hash, telefono, direccion, tipo_usuario, fecha_registro, estado)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE, 'Activo') RETURNING *`,
-      [nombre, apellido, email, passwordHash, telefono, direccion, tipo_usuario || 'Externo']
+      `INSERT INTO usuario (carnet, nombre, apellido, email, password_hash, telefono, direccion, tipo_usuario, fecha_registro, estado)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_DATE, 'Activo') RETURNING *`,
+      [userCarnet, nombre, apellido, email, passwordHash, telefono, direccion, tipo_usuario || 'Externo']
     );
 
     const user = result.rows[0];
