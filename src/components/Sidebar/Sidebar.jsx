@@ -51,7 +51,7 @@ const icons = {
 };
 
 function Sidebar({ isOpen, onClose }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -64,14 +64,16 @@ function Sidebar({ isOpen, onClose }) {
     onClose?.();
   };
 
-  const menuItems = [
+  const allMenuItems = [
     { icon: icons.discover, label: 'Descubrir', path: '/' },
     { icon: icons.category, label: 'Categorías', path: '/categories' },
     { icon: icons.loans, label: 'Préstamos', path: '/loans' },
     { icon: icons.reservations, label: 'Reservas', path: '/reservations' },
-    { icon: icons.users, label: 'Usuarios', path: '/users' },
-    { icon: icons.fines, label: 'Multas', path: '/fines' },
+    { icon: icons.users, label: 'Usuarios', path: '/users', adminOnly: true },
+    { icon: icons.fines, label: 'Multas', path: '/fines', adminOnly: true },
   ];
+
+  const menuItems = allMenuItems.filter(item => !item.adminOnly || isAdmin());
 
   const bottomItems = [
     { icon: icons.settings, label: 'Configuración', path: '/settings' },

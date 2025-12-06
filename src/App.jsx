@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { BooksProvider } from './context/BooksContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Sidebar from './components/Sidebar/Sidebar';
 import TopBar from './components/TopBar/TopBar';
 import Home from './pages/Home';
@@ -45,13 +46,13 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/books/new" element={<ProtectedRoute><BookForm /></ProtectedRoute>} />
-              <Route path="/books/edit/:id" element={<ProtectedRoute><BookForm /></ProtectedRoute>} />
+              <Route path="/books/new" element={<AdminRoute><BookForm /></AdminRoute>} />
+              <Route path="/books/edit/:id" element={<AdminRoute><BookForm /></AdminRoute>} />
               <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
               <Route path="/loans" element={<ProtectedRoute><Loans /></ProtectedRoute>} />
               <Route path="/reservations" element={<ProtectedRoute><Reservations /></ProtectedRoute>} />
-              <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-              <Route path="/fines" element={<ProtectedRoute><Fines /></ProtectedRoute>} />
+              <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
+              <Route path="/fines" element={<AdminRoute><Fines /></AdminRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             </Routes>
           </AppLayout>
