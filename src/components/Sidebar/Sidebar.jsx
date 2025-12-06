@@ -38,25 +38,30 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
-  support: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
   logout: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   ),
+  close: (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  ),
 };
 
-function Sidebar() {
+function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    onClose?.();
+  };
+
+  const handleNavClick = () => {
+    onClose?.();
   };
 
   const menuItems = [
@@ -73,99 +78,117 @@ function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-white h-screen fixed left-0 top-0 border-r border-slate-100 flex flex-col">
-      {/* Logo */}
-      <div className="p-6 pb-8">
-        <NavLink to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-slate-900">BookBase</span>
-        </NavLink>
-      </div>
-
-      {/* Main Navigation */}
-      <nav className="flex-1 px-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`
-                }
-              >
-                {item.icon}
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-
-        {/* Divider */}
-        <div className="my-6 border-t border-slate-100"></div>
-
-        {/* Bottom Navigation */}
-        <ul className="space-y-1">
-          {bottomItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`
-                }
-              >
-                {item.icon}
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-          {user && (
-            <li>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all"
-              >
-                {icons.logout}
-                Logout
-              </button>
-            </li>
-          )}
-        </ul>
-      </nav>
-
-      {/* User Profile or Login */}
-      <div className="p-4 border-t border-slate-100">
-        {user ? (
-          <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-              {user.name.charAt(0).toUpperCase()}
+    <>
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside className={`
+        w-64 bg-white h-screen fixed left-0 top-0 border-r border-slate-100 flex flex-col z-50
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+      `}>
+        <div className="p-6 pb-8 flex items-center justify-between">
+          <NavLink to="/" className="flex items-center gap-3" onClick={handleNavClick}>
+            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{user.name}</p>
-              <p className="text-xs text-slate-500">{user.email}</p>
-            </div>
-          </div>
-        ) : (
-          <NavLink
-            to="/login"
-            className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all"
-          >
-            Sign In
+            <span className="text-xl font-bold text-slate-900">BookBase</span>
           </NavLink>
-        )}
-      </div>
-    </aside>
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            {icons.close}
+          </button>
+        </div>
+
+        <nav className="flex-1 px-4 overflow-y-auto">
+          <ul className="space-y-1">
+            {menuItems.map((item) => (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+
+          <div className="my-6 border-t border-slate-100"></div>
+
+          <ul className="space-y-1">
+            {bottomItems.map((item) => (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`
+                  }
+                >
+                  {item.icon}
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+            {user && (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all"
+                >
+                  {icons.logout}
+                  Logout
+                </button>
+              </li>
+            )}
+          </ul>
+        </nav>
+
+        <div className="p-4 border-t border-slate-100">
+          {user ? (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
+                <p className="text-xs text-slate-500 truncate">{user.email}</p>
+              </div>
+            </div>
+          ) : (
+            <NavLink
+              to="/login"
+              onClick={handleNavClick}
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all"
+            >
+              Sign In
+            </NavLink>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }
 

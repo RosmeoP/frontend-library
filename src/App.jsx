@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { BooksProvider } from './context/BooksContext';
@@ -16,6 +17,7 @@ import BookForm from './components/BookForm/BookForm';
 
 function AppLayout({ children }) {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   if (isAuthPage) {
@@ -24,10 +26,10 @@ function AppLayout({ children }) {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <div className="flex-1 ml-64">
-        <TopBar />
-        <main>{children}</main>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex-1 lg:ml-64">
+        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
