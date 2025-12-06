@@ -22,6 +22,16 @@ export function BooksProvider({ children }) {
     try {
       setLoading(true);
       setError(null);
+      
+      const safeApiCall = async (apiCall, defaultValue = []) => {
+        try {
+          return await apiCall();
+        } catch (err) {
+          console.warn('API call failed, using default:', err.message);
+          return defaultValue;
+        }
+      };
+      
       const [
         booksData,
         authorsData,
@@ -33,15 +43,15 @@ export function BooksProvider({ children }) {
         finesData,
         copiesData
       ] = await Promise.all([
-        api.books.getAll(),
-        api.authors.getAll(),
-        api.publishers.getAll(),
-        api.categories.getAll(),
-        api.users.getAll(),
-        api.loans.getAll(),
-        api.reservations.getAll(),
-        api.fines.getAll(),
-        api.books.getAllCopies()
+        safeApiCall(api.books.getAll),
+        safeApiCall(api.authors.getAll),
+        safeApiCall(api.publishers.getAll),
+        safeApiCall(api.categories.getAll),
+        safeApiCall(api.users.getAll),
+        safeApiCall(api.loans.getAll),
+        safeApiCall(api.reservations.getAll),
+        safeApiCall(api.fines.getAll),
+        safeApiCall(api.books.getAllCopies)
       ]);
       
       setBooks(booksData);
