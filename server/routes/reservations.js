@@ -1,6 +1,6 @@
 import express from 'express';
 import { query } from '../db/index.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -36,16 +36,32 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query(`
-      SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
-      FROM reservas r
-      JOIN usuario u ON r.id_usuario = u.id_usuario
-      JOIN libros l ON r.id_libro = l.id_libro
-      WHERE r.id_reserva = $1
-    `, [id]);
+    const user = req.user;
+    const adminRoles = ['Administrativo', 'Bibliotecario'];
+    const isAdmin = adminRoles.includes(user.tipo_usuario);
+
+    let result;
+    if (isAdmin) {
+      result = await query(`
+        SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
+        FROM reservas r
+        JOIN usuario u ON r.id_usuario = u.id_usuario
+        JOIN libros l ON r.id_libro = l.id_libro
+        WHERE r.id_reserva = $1
+      `, [id]);
+    } else {
+      result = await query(`
+        SELECT r.*, u.nombre, u.apellido, u.email, l.titulo
+        FROM reservas r
+        JOIN usuario u ON r.id_usuario = u.id_usuario
+        JOIN libros l ON r.id_libro = l.id_libro
+        WHERE r.id_reserva = $1 AND r.id_usuario = $2
+      `, [id, user.id_usuario]);
+    }
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Reservation not found' });
     }
@@ -56,7 +72,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { id_usuario, id_libro } = req.body;
     const result = await query(
@@ -71,7 +87,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id/complete', async (req, res) => {
+router.put('/:id/complete', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query(
@@ -88,7 +104,7 @@ router.put('/:id/complete', async (req, res) => {
   }
 });
 
-router.put('/:id/cancel', async (req, res) => {
+router.put('/:id/cancel', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query(
@@ -105,7 +121,7 @@ router.put('/:id/cancel', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query('DELETE FROM reservas WHERE id_reserva = $1 RETURNING *', [id]);
