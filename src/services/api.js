@@ -1,5 +1,23 @@
 const API_BASE = '/api';
 
+function getUserId() {
+  const saved = localStorage.getItem('user');
+  if (saved) {
+    const user = JSON.parse(saved);
+    return user.id;
+  }
+  return null;
+}
+
+function getAuthHeaders() {
+  const userId = getUserId();
+  const headers = { 'Content-Type': 'application/json' };
+  if (userId) {
+    headers['X-User-Id'] = userId;
+  }
+  return headers;
+}
+
 async function handleResponse(response) {
   const data = await response.json();
   if (!response.ok) {
@@ -16,20 +34,23 @@ export const api = {
     getById: (id) => fetch(`${API_BASE}/books/${id}`).then(handleResponse),
     create: (book) => fetch(`${API_BASE}/books`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(book)
     }).then(handleResponse),
     update: (id, book) => fetch(`${API_BASE}/books/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(book)
     }).then(handleResponse),
-    delete: (id) => fetch(`${API_BASE}/books/${id}`, { method: 'DELETE' }).then(handleResponse),
+    delete: (id) => fetch(`${API_BASE}/books/${id}`, { 
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
     getCopies: (id) => fetch(`${API_BASE}/books/${id}/copies`).then(handleResponse),
     getAllCopies: () => fetch(`${API_BASE}/books/copies/all`).then(handleResponse),
     addCopy: (id, copy) => fetch(`${API_BASE}/books/${id}/copies`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(copy)
     }).then(handleResponse),
   },

@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 
 function Home() {
   const { books, categorias } = useBooks();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -50,7 +50,7 @@ function Home() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-900">Categorías</h2>
-            {user && (
+            {isAdmin() && (
               <Link
                 to="/books/new"
                 className="text-sm bg-slate-900 text-white px-4 py-2 rounded-xl font-medium hover:bg-slate-800 transition-all flex items-center gap-2"

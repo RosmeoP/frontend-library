@@ -1,5 +1,6 @@
 import express from 'express';
 import { query } from '../db/index.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -69,7 +70,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
     const result = await query(
@@ -84,7 +85,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
@@ -103,7 +104,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query('DELETE FROM libros WHERE id_libro = $1 RETURNING *', [id]);
@@ -128,7 +129,7 @@ router.get('/:id/copies', async (req, res) => {
   }
 });
 
-router.post('/:id/copies', async (req, res) => {
+router.post('/:id/copies', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { ubicacion, estado } = req.body;

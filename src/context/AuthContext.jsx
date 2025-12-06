@@ -48,8 +48,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const isAdmin = () => {
+    if (!user) return false;
+    const adminRoles = ['Administrativo', 'Bibliotecario'];
+    return adminRoles.includes(user.tipo);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
