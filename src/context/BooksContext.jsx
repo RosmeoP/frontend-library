@@ -74,7 +74,8 @@ export function BooksProvider({ children }) {
         anoedicion: bookData.anoedicion,
         codigoeditorial: bookData.codigoeditorial,
         id_categoria: bookData.id_categoria,
-        sinopsis: bookData.sinopsis
+        sinopsis: bookData.sinopsis,
+        portada: bookData.portada
       });
       await fetchAllData();
       return newBook;
@@ -92,7 +93,8 @@ export function BooksProvider({ children }) {
         anoedicion: updatedData.anoedicion,
         codigoeditorial: updatedData.codigoeditorial,
         id_categoria: updatedData.id_categoria,
-        sinopsis: updatedData.sinopsis
+        sinopsis: updatedData.sinopsis,
+        portada: updatedData.portada
       });
       await fetchAllData();
     } catch (err) {

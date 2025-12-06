@@ -71,11 +71,11 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
     const result = await query(
-      `INSERT INTO libros (titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis) 
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis]
+      `INSERT INTO libros (titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -87,11 +87,11 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
     const result = await query(
       `UPDATE libros SET titulo = $1, isbn = $2, anoedicion = $3, codigoeditorial = $4, 
-       id_categoria = $5, sinopsis = $6 WHERE id_libro = $7 RETURNING *`,
-      [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, id]
+       id_categoria = $5, sinopsis = $6, portada = $7 WHERE id_libro = $8 RETURNING *`,
+      [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
