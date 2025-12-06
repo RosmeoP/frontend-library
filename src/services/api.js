@@ -74,34 +74,34 @@ export const api = {
   },
 
   loans: {
-    getAll: () => fetch(`${API_BASE}/loans`).then(handleResponse),
-    getActive: () => fetch(`${API_BASE}/loans/active`).then(handleResponse),
-    getOverdue: () => fetch(`${API_BASE}/loans/overdue`).then(handleResponse),
-    getById: (id) => fetch(`${API_BASE}/loans/${id}`).then(handleResponse),
+    getAll: () => fetch(`${API_BASE}/loans`, { headers: getAuthHeaders() }).then(handleResponse),
+    getActive: () => fetch(`${API_BASE}/loans/active`, { headers: getAuthHeaders() }).then(handleResponse),
+    getOverdue: () => fetch(`${API_BASE}/loans/overdue`, { headers: getAuthHeaders() }).then(handleResponse),
+    getById: (id) => fetch(`${API_BASE}/loans/${id}`, { headers: getAuthHeaders() }).then(handleResponse),
     create: (loan) => fetch(`${API_BASE}/loans`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(loan)
     }).then(handleResponse),
-    return: (id) => fetch(`${API_BASE}/loans/${id}/return`, { method: 'POST' }).then(handleResponse),
+    return: (id) => fetch(`${API_BASE}/loans/${id}/return`, { method: 'POST', headers: getAuthHeaders() }).then(handleResponse),
     renew: (id, diasAdicionales) => fetch(`${API_BASE}/loans/${id}/renew`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ dias_adicionales: diasAdicionales })
     }).then(handleResponse),
   },
 
   reservations: {
-    getAll: () => fetch(`${API_BASE}/reservations`).then(handleResponse),
-    getById: (id) => fetch(`${API_BASE}/reservations/${id}`).then(handleResponse),
+    getAll: () => fetch(`${API_BASE}/reservations`, { headers: getAuthHeaders() }).then(handleResponse),
+    getById: (id) => fetch(`${API_BASE}/reservations/${id}`, { headers: getAuthHeaders() }).then(handleResponse),
     create: (reservation) => fetch(`${API_BASE}/reservations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(reservation)
     }).then(handleResponse),
-    complete: (id) => fetch(`${API_BASE}/reservations/${id}/complete`, { method: 'PUT' }).then(handleResponse),
-    cancel: (id) => fetch(`${API_BASE}/reservations/${id}/cancel`, { method: 'PUT' }).then(handleResponse),
-    delete: (id) => fetch(`${API_BASE}/reservations/${id}`, { method: 'DELETE' }).then(handleResponse),
+    complete: (id) => fetch(`${API_BASE}/reservations/${id}/complete`, { method: 'PUT', headers: getAuthHeaders() }).then(handleResponse),
+    cancel: (id) => fetch(`${API_BASE}/reservations/${id}/cancel`, { method: 'PUT', headers: getAuthHeaders() }).then(handleResponse),
+    delete: (id) => fetch(`${API_BASE}/reservations/${id}`, { method: 'DELETE', headers: getAuthHeaders() }).then(handleResponse),
   },
 
   fines: {
