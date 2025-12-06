@@ -1,19 +1,38 @@
 import express from 'express';
 import { query } from '../db/index.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const result = await query(`
-      SELECT p.*, u.nombre, u.apellido, u.email,
-             ej.id_libro, l.titulo
-      FROM prestamos p
-      JOIN usuario u ON p.id_usuario = u.id_usuario
-      JOIN ejemplar ej ON p.id_ejemplar = ej.id_ejemplar
-      JOIN libros l ON ej.id_libro = l.id_libro
-      ORDER BY p.fecha_prestamo DESC
-    `);
+    const user = req.user;
+    const adminRoles = ['Administrativo', 'Bibliotecario'];
+    const isAdmin = adminRoles.includes(user.tipo_usuario);
+
+    let result;
+    if (isAdmin) {
+      result = await query(`
+        SELECT p.*, u.nombre, u.apellido, u.email,
+               ej.id_libro, l.titulo
+        FROM prestamos p
+        JOIN usuario u ON p.id_usuario = u.id_usuario
+        JOIN ejemplar ej ON p.id_ejemplar = ej.id_ejemplar
+        JOIN libros l ON ej.id_libro = l.id_libro
+        ORDER BY p.fecha_prestamo DESC
+      `);
+    } else {
+      result = await query(`
+        SELECT p.*, u.nombre, u.apellido, u.email,
+               ej.id_libro, l.titulo
+        FROM prestamos p
+        JOIN usuario u ON p.id_usuario = u.id_usuario
+        JOIN ejemplar ej ON p.id_ejemplar = ej.id_ejemplar
+        JOIN libros l ON ej.id_libro = l.id_libro
+        WHERE p.id_usuario = $1
+        ORDER BY p.fecha_prestamo DESC
+      `, [user.id_usuario]);
+    }
     res.json(result.rows);
   } catch (err) {
     console.error(err);
