@@ -75,9 +75,7 @@ function Sidebar({ isOpen, onClose }) {
 
   const menuItems = allMenuItems.filter(item => !item.adminOnly || isAdmin());
 
-  const bottomItems = [
-    { icon: icons.settings, label: 'Configuración', path: '/settings' },
-  ];
+  const bottomItems = [];
 
   return (
     <>
