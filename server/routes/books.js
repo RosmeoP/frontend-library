@@ -77,13 +77,23 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad } = req.body;
     const result = await query(
       `INSERT INTO libros (titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada) 
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada]
     );
-    res.status(201).json(result.rows[0]);
+    const newBook = result.rows[0];
+    
+    const stockCount = parseInt(cantidad) || 0;
+    for (let i = 0; i < stockCount; i++) {
+      await query(
+        'INSERT INTO ejemplar (id_libro, ubicacion, estado) VALUES ($1, $2, $3)',
+        [newBook.id_libro, 'General', 'Disponible']
+      );
+    }
+    
+    res.status(201).json(newBook);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error creating book' });
@@ -93,7 +103,7 @@ router.post('/', requireAdmin, async (req, res) => {
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad } = req.body;
     const result = await query(
       `UPDATE libros SET titulo = $1, isbn = $2, anoedicion = $3, codigoeditorial = $4, 
        id_categoria = $5, sinopsis = $6, portada = $7 WHERE id_libro = $8 RETURNING *`,
@@ -102,6 +112,48 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
+    
+    const desiredStock = parseInt(cantidad);
+    if (!isNaN(desiredStock)) {
+      const currentCopiesResult = await query(
+        'SELECT COUNT(*) as count FROM ejemplar WHERE id_libro = $1',
+        [id]
+      );
+      const currentStock = parseInt(currentCopiesResult.rows[0].count) || 0;
+      
+      if (desiredStock > currentStock) {
+        const toAdd = desiredStock - currentStock;
+        for (let i = 0; i < toAdd; i++) {
+          await query(
+            'INSERT INTO ejemplar (id_libro, ubicacion, estado) VALUES ($1, $2, $3)',
+            [id, 'General', 'Disponible']
+          );
+        }
+      } else if (desiredStock < currentStock) {
+        const toRemove = currentStock - desiredStock;
+        const availableResult = await query(
+          `SELECT COUNT(*) as count FROM ejemplar WHERE id_libro = $1 AND estado = 'Disponible'`,
+          [id]
+        );
+        const availableCount = parseInt(availableResult.rows[0].count) || 0;
+        
+        if (availableCount < toRemove) {
+          return res.status(400).json({ 
+            error: `No se pueden eliminar ${toRemove} ejemplares. Solo hay ${availableCount} disponibles (los demás están prestados).` 
+          });
+        }
+        
+        await query(
+          `DELETE FROM ejemplar WHERE id_ejemplar IN (
+            SELECT id_ejemplar FROM ejemplar 
+            WHERE id_libro = $1 AND estado = 'Disponible' 
+            ORDER BY id_ejemplar DESC LIMIT $2
+          )`,
+          [id, toRemove]
+        );
+      }
+    }
+    
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);

@@ -85,7 +85,8 @@ export function BooksProvider({ children }) {
         codigoeditorial: bookData.codigoeditorial,
         id_categoria: bookData.id_categoria,
         sinopsis: bookData.sinopsis,
-        portada: bookData.portada
+        portada: bookData.portada,
+        cantidad: bookData.cantidad
       });
       await fetchAllData();
       return newBook;
@@ -104,7 +105,8 @@ export function BooksProvider({ children }) {
         codigoeditorial: updatedData.codigoeditorial,
         id_categoria: updatedData.id_categoria,
         sinopsis: updatedData.sinopsis,
-        portada: updatedData.portada
+        portada: updatedData.portada,
+        cantidad: updatedData.cantidad
       });
       await fetchAllData();
     } catch (err) {

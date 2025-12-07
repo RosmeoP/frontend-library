@@ -17,6 +17,7 @@ function BookForm() {
     sinopsis: '',
     portada: '',
     selectedAutores: [],
+    cantidad: 1,
   });
   const [error, setError] = useState('');
 
@@ -33,6 +34,7 @@ function BookForm() {
           sinopsis: libro.sinopsis || '',
           portada: libro.portada || '',
           selectedAutores: [],
+          cantidad: libro.totalEjemplares || 0,
         });
       } else {
         navigate('/');
@@ -75,6 +77,7 @@ function BookForm() {
       sinopsis: formData.sinopsis,
       portada: formData.portada || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop',
       id_autor: formData.selectedAutores[0],
+      cantidad: Number(formData.cantidad) || 0,
     };
 
     try {
@@ -153,6 +156,21 @@ function BookForm() {
                 placeholder="Año de publicación"
                 min="1000"
                 max={new Date().getFullYear()}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Stock / Cantidad
+              </label>
+              <input
+                type="number"
+                name="cantidad"
+                value={formData.cantidad}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
+                placeholder="Cantidad de ejemplares"
+                min="0"
               />
             </div>
 
