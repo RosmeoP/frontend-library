@@ -15,10 +15,10 @@ function BookDetail({ book, onClose }) {
   const disponible = book.disponible ?? book.available;
   const ejemplaresDisponibles = book.ejemplaresDisponibles ?? (book.available ? 1 : 0);
   const totalEjemplares = book.totalEjemplares ?? 1;
-  const categoria = book.categoriaNombre || book.genre;
-  const editorial = book.editorialNombre || 'Unknown';
-  const anio = book.anio_edicion || book.year;
-  const isbn = book.ISBN || 'N/A';
+  const categoria = book.categoriaNombre || book.categoria_nombre || book.genre;
+  const editorial = book.editorialNombre || book.editorial_nombre || 'Unknown';
+  const anio = book.anio_edicion || book.anoedicion || book.year;
+  const isbn = book.ISBN || book.isbn || 'N/A';
 
   return (
     <div className="w-80 bg-linear-to-b from-slate-800 to-slate-900 rounded-3xl p-6 text-white flex flex-col h-full overflow-y-auto shrink-0">
