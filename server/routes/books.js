@@ -7,10 +7,15 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const result = await query(`
-      SELECT l.*, c.nombre as categoria_nombre, e.nombre as editorial_nombre
+      SELECT l.*, c.nombre as categoria_nombre, ed.nombre as editorial_nombre,
+        COUNT(e.id_ejemplar) as "totalEjemplares",
+        COUNT(CASE WHEN e.estado = 'Disponible' THEN 1 END) as "ejemplaresDisponibles",
+        CASE WHEN COUNT(CASE WHEN e.estado = 'Disponible' THEN 1 END) > 0 THEN true ELSE false END as disponible
       FROM libros l
       LEFT JOIN categoria c ON l.id_categoria = c.id_categoria
-      LEFT JOIN editorial e ON l.codigoeditorial = e.id_editorial
+      LEFT JOIN editorial ed ON l.codigoeditorial = ed.id_editorial
+      LEFT JOIN ejemplar e ON l.id_libro = e.id_libro
+      GROUP BY l.id_libro, c.nombre, ed.nombre
       ORDER BY l.titulo
     `);
     res.json(result.rows);
