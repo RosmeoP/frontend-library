@@ -32,6 +32,7 @@ export const api = {
     getAvailable: () => fetch(`${API_BASE}/books/available`).then(handleResponse),
     search: (term) => fetch(`${API_BASE}/books/search?term=${encodeURIComponent(term)}`).then(handleResponse),
     getById: (id) => fetch(`${API_BASE}/books/${id}`).then(handleResponse),
+    getAuthors: (id) => fetch(`${API_BASE}/books/${id}/authors`).then(handleResponse),
     create: (book) => fetch(`${API_BASE}/books`, {
       method: 'POST',
       headers: getAuthHeaders(),

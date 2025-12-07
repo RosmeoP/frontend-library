@@ -86,7 +86,8 @@ export function BooksProvider({ children }) {
         id_categoria: bookData.id_categoria,
         sinopsis: bookData.sinopsis,
         portada: bookData.portada,
-        cantidad: bookData.cantidad
+        cantidad: bookData.cantidad,
+        autores: bookData.autores
       });
       await fetchAllData();
       return newBook;
@@ -106,7 +107,8 @@ export function BooksProvider({ children }) {
         id_categoria: updatedData.id_categoria,
         sinopsis: updatedData.sinopsis,
         portada: updatedData.portada,
-        cantidad: updatedData.cantidad
+        cantidad: updatedData.cantidad,
+        autores: updatedData.autores
       });
       await fetchAllData();
     } catch (err) {
@@ -293,6 +295,37 @@ export function BooksProvider({ children }) {
     }
   };
 
+  const addAutor = async (authorData) => {
+    try {
+      const result = await api.authors.create(authorData);
+      await fetchAllData();
+      return result;
+    } catch (err) {
+      console.error('Error creating author:', err);
+      throw err;
+    }
+  };
+
+  const updateAutor = async (id, authorData) => {
+    try {
+      await api.authors.update(id, authorData);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error updating author:', err);
+      throw err;
+    }
+  };
+
+  const deleteAutor = async (id) => {
+    try {
+      await api.authors.delete(id);
+      await fetchAllData();
+    } catch (err) {
+      console.error('Error deleting author:', err);
+      throw err;
+    }
+  };
+
   const prestamosCompletos = prestamos.map(p => ({
     ...p,
     libroTitulo: p.titulo || 'Desconocido',
@@ -333,6 +366,9 @@ export function BooksProvider({ children }) {
     addCategoria,
     updateCategoria,
     deleteCategoria,
+    addAutor,
+    updateAutor,
+    deleteAutor,
     setUsuarios,
     setPrestamos,
     setReservas,

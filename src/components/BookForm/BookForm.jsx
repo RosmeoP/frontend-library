@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBooks } from '../../context/BooksContext';
+import { api } from '../../services/api';
+import AuthorSelector from '../AuthorSelector/AuthorSelector';
 
 function BookForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addBook, updateBook, getBook, autores, editoriales, categorias } = useBooks();
+  const { addBook, updateBook, getBook, autores, editoriales, categorias, addAutor, refetch } = useBooks();
   const isEditing = Boolean(id);
 
   const [formData, setFormData] = useState({
@@ -36,6 +38,16 @@ function BookForm() {
           selectedAutores: [],
           cantidad: libro.totalEjemplares || 0,
         });
+        
+        // Fetch existing authors for this book
+        api.books.getAuthors(Number(id))
+          .then(authors => {
+            setFormData(prev => ({
+              ...prev,
+              selectedAutores: authors.map(a => a.id_autor)
+            }));
+          })
+          .catch(err => console.error('Error fetching book authors:', err));
       } else {
         navigate('/');
       }
@@ -50,13 +62,26 @@ function BookForm() {
     }));
   };
 
-  const handleAutorToggle = (autorId) => {
+  const handleAutoresChange = (selectedAutorIds) => {
     setFormData(prev => ({
       ...prev,
-      selectedAutores: prev.selectedAutores.includes(autorId)
-        ? prev.selectedAutores.filter(id => id !== autorId)
-        : [...prev.selectedAutores, autorId]
+      selectedAutores: selectedAutorIds
     }));
+  };
+
+  const handleCreateAuthor = async (authorData) => {
+    try {
+      const newAuthor = await addAutor(authorData);
+      return newAuthor;
+    } catch (err) {
+      console.error('Error creating author:', err);
+      throw err;
+    }
+  };
+
+  const handleRefreshAuthors = async () => {
+    // Refresh all data to get the updated authors list
+    await refetch();
   };
 
   const handleSubmit = async (e) => {
@@ -76,7 +101,7 @@ function BookForm() {
       id_categoria: Number(formData.id_categoria),
       sinopsis: formData.sinopsis,
       portada: formData.portada || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop',
-      id_autor: formData.selectedAutores[0],
+      autores: formData.selectedAutores,
       cantidad: Number(formData.cantidad) || 0,
     };
 
@@ -214,27 +239,13 @@ function BookForm() {
           </div>
 
           {/* Authors Selection */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Autores
-            </label>
-            <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl">
-              {autores.map(autor => (
-                <button
-                  key={autor.id_autor}
-                  type="button"
-                  onClick={() => handleAutorToggle(autor.id_autor)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    formData.selectedAutores.includes(autor.id_autor)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
-                  }`}
-                >
-                  {autor.nombres} {autor.apellidos}
-                </button>
-              ))}
-            </div>
-          </div>
+          <AuthorSelector
+            selectedAuthors={formData.selectedAutores}
+            onChange={handleAutoresChange}
+            availableAuthors={autores}
+            onCreateAuthor={handleCreateAuthor}
+            onRefreshAuthors={handleRefreshAuthors}
+          />
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">

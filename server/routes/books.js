@@ -77,13 +77,23 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad, autores } = req.body;
     const result = await query(
       `INSERT INTO libros (titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada) 
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada]
     );
     const newBook = result.rows[0];
+    
+    // Associate authors with the book
+    if (autores && Array.isArray(autores) && autores.length > 0) {
+      for (const autorId of autores) {
+        await query(
+          'INSERT INTO autor_libro (id_autor, id_libro) VALUES ($1, $2)',
+          [autorId, newBook.id_libro]
+        );
+      }
+    }
     
     const stockCount = parseInt(cantidad) || 0;
     for (let i = 0; i < stockCount; i++) {
@@ -104,7 +114,7 @@ router.post('/', requireAdmin, async (req, res) => {
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad } = req.body;
+    const { titulo, isbn, anoedicion, codigoeditorial, id_categoria, sinopsis, portada, cantidad, autores } = req.body;
     const result = await query(
       `UPDATE libros SET titulo = $1, isbn = $2, anoedicion = $3, codigoeditorial = $4, 
        id_categoria = $5, sinopsis = $6, portada = $7 WHERE id_libro = $8 RETURNING *`,
@@ -112,6 +122,20 @@ router.put('/:id', requireAdmin, async (req, res) => {
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
+    }
+    
+    // Update author associations
+    if (autores && Array.isArray(autores)) {
+      // Remove existing associations
+      await query('DELETE FROM autor_libro WHERE id_libro = $1', [id]);
+      
+      // Add new associations
+      for (const autorId of autores) {
+        await query(
+          'INSERT INTO autor_libro (id_autor, id_libro) VALUES ($1, $2)',
+          [autorId, id]
+        );
+      }
     }
     
     const desiredStock = parseInt(cantidad);
@@ -174,6 +198,22 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error deleting book' });
+  }
+});
+
+router.get('/:id/authors', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await query(`
+      SELECT a.* FROM autor a
+      JOIN autor_libro al ON a.id_autor = al.id_autor
+      WHERE al.id_libro = $1
+      ORDER BY a.apellidos, a.nombres
+    `, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error fetching book authors' });
   }
 });
 
