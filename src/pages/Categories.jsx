@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useBooks } from '../context/BooksContext';
+import { useAuth } from '../context/AuthContext';
 import BookCard from '../components/BookCard/BookCard';
 import BookDetail from '../components/BookDetail/BookDetail';
+import CategoryModal from '../components/CategoryModal/CategoryModal';
 
 // Category styling config based on id_categoria
 const categoryStyles = {
@@ -79,9 +81,12 @@ const defaultStyle = {
 };
 
 function Categories() {
-  const { books, categorias, ejemplares } = useBooks();
+  const { books, categorias, ejemplares, addCategoria, updateCategoria, deleteCategoria } = useBooks();
+  const { isAdmin } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   // Get books for selected category (books already have author info from context)
   const categoryBooks = useMemo(() => {
@@ -99,6 +104,35 @@ function Categories() {
     return ejemplares.filter(e => e.estado === 'Disponible').length;
   };
 
+  const handleOpenCreateModal = () => {
+    setEditingCategory(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (categoria) => {
+    setEditingCategory(categoria);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingCategory(null);
+  };
+
+  const handleSaveCategory = async (categoryData) => {
+    if (editingCategory) {
+      await updateCategoria(editingCategory.id_categoria, categoryData);
+    } else {
+      await addCategoria(categoryData);
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
+      await deleteCategoria(id);
+    }
+  };
+
   return (
     <div className="flex gap-6 p-6 pl-8 h-[calc(100vh-5rem)] overflow-hidden">
       {/* Main Content */}
@@ -107,7 +141,20 @@ function Categories() {
           <>
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Categorías</h1>
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-2xl font-bold text-slate-900">Categorías</h1>
+                {isAdmin() && (
+                  <button
+                    onClick={handleOpenCreateModal}
+                    className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl font-medium hover:bg-slate-800 transition-all text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Categoría
+                  </button>
+                )}
+              </div>
               <p className="text-slate-500">Explora libros por categoría</p>
             </div>
 
@@ -118,20 +165,51 @@ function Categories() {
                 const bookCount = getBookCount(categoria.id_categoria);
 
                 return (
-                  <button
-                    key={categoria.id_categoria}
-                    onClick={() => setSelectedCategory(categoria)}
-                    className={`group p-5 rounded-2xl text-left transition-all duration-200 bg-white border ${style.borderColor} hover:shadow-md hover:border-slate-200`}
-                  >
-                    <div className={`w-12 h-12 rounded-xl ${style.bgColor} flex items-center justify-center mb-4 ${style.iconColor} group-hover:scale-105 transition-transform`}>
-                      {style.icon}
-                    </div>
-                    <h3 className="font-semibold text-slate-900 mb-1">{categoria.nombre}</h3>
-                    <p className="text-sm text-slate-400 mb-3 line-clamp-2">{categoria.descripcion}</p>
-                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                      {bookCount} {bookCount === 1 ? 'libro' : 'libros'}
-                    </span>
-                  </button>
+                  <div key={categoria.id_categoria} className="relative group">
+                    <button
+                      onClick={() => setSelectedCategory(categoria)}
+                      className={`w-full p-5 rounded-2xl text-left transition-all duration-200 bg-white border ${style.borderColor} hover:shadow-md hover:border-slate-200`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl ${style.bgColor} flex items-center justify-center mb-4 ${style.iconColor} group-hover:scale-105 transition-transform`}>
+                        {style.icon}
+                      </div>
+                      <h3 className="font-semibold text-slate-900 mb-1">{categoria.nombre}</h3>
+                      <p className="text-sm text-slate-400 mb-3 line-clamp-2">{categoria.descripcion}</p>
+                      <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                        {bookCount} {bookCount === 1 ? 'libro' : 'libros'}
+                      </span>
+                    </button>
+                    
+                    {/* Admin Actions */}
+                    {isAdmin() && (
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditModal(categoria);
+                          }}
+                          className="p-1.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                          title="Editar categoría"
+                        >
+                          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCategory(categoria.id_categoria);
+                          }}
+                          className="p-1.5 bg-white border border-slate-200 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
+                          title="Eliminar categoría"
+                        >
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -247,6 +325,14 @@ function Categories() {
           <p className="text-slate-300 text-sm text-center">Haz clic en un libro para ver sus detalles</p>
         </div>
       )}
+
+      {/* Category Modal */}
+      <CategoryModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveCategory}
+        category={editingCategory}
+      />
     </div>
   );
 }

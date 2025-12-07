@@ -119,15 +119,18 @@ export const api = {
     getBooks: (id) => fetch(`${API_BASE}/categories/${id}/books`).then(handleResponse),
     create: (category) => fetch(`${API_BASE}/categories`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(category)
     }).then(handleResponse),
     update: (id, category) => fetch(`${API_BASE}/categories/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(category)
     }).then(handleResponse),
-    delete: (id) => fetch(`${API_BASE}/categories/${id}`, { method: 'DELETE' }).then(handleResponse),
+    delete: (id) => fetch(`${API_BASE}/categories/${id}`, { 
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
   },
 
   authors: {
