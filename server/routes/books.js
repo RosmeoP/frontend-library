@@ -87,9 +87,10 @@ router.post('/', requireAdmin, async (req, res) => {
     
     const stockCount = parseInt(cantidad) || 0;
     for (let i = 0; i < stockCount; i++) {
+      const codigoBarras = `LIB-${newBook.id_libro.toString().padStart(3, '0')}-${(i + 1).toString().padStart(3, '0')}`;
       await query(
-        'INSERT INTO ejemplar (id_libro, ubicacion, estado) VALUES ($1, $2, $3)',
-        [newBook.id_libro, 'General', 'Disponible']
+        'INSERT INTO ejemplar (id_libro, codigo_barras, estado) VALUES ($1, $2, $3)',
+        [newBook.id_libro, codigoBarras, 'Disponible']
       );
     }
     
@@ -124,9 +125,10 @@ router.put('/:id', requireAdmin, async (req, res) => {
       if (desiredStock > currentStock) {
         const toAdd = desiredStock - currentStock;
         for (let i = 0; i < toAdd; i++) {
+          const codigoBarras = `LIB-${id.toString().padStart(3, '0')}-${(currentStock + i + 1).toString().padStart(3, '0')}`;
           await query(
-            'INSERT INTO ejemplar (id_libro, ubicacion, estado) VALUES ($1, $2, $3)',
-            [id, 'General', 'Disponible']
+            'INSERT INTO ejemplar (id_libro, codigo_barras, estado) VALUES ($1, $2, $3)',
+            [id, codigoBarras, 'Disponible']
           );
         }
       } else if (desiredStock < currentStock) {
@@ -189,10 +191,19 @@ router.get('/:id/copies', async (req, res) => {
 router.post('/:id/copies', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { ubicacion, estado } = req.body;
+    const { codigo_barras, estado, nota_estado } = req.body;
+    
+    // Generate barcode if not provided
+    let codigoBarras = codigo_barras;
+    if (!codigoBarras) {
+      const countResult = await query('SELECT COUNT(*) as count FROM ejemplar WHERE id_libro = $1', [id]);
+      const count = parseInt(countResult.rows[0].count) || 0;
+      codigoBarras = `LIB-${id.toString().padStart(3, '0')}-${(count + 1).toString().padStart(3, '0')}`;
+    }
+    
     const result = await query(
-      'INSERT INTO ejemplar (id_libro, ubicacion, estado) VALUES ($1, $2, $3) RETURNING *',
-      [id, ubicacion || 'General', estado || 'Disponible']
+      'INSERT INTO ejemplar (id_libro, codigo_barras, estado, nota_estado) VALUES ($1, $2, $3, $4) RETURNING *',
+      [id, codigoBarras, estado || 'Disponible', nota_estado || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

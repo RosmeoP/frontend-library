@@ -129,9 +129,12 @@ export function BooksProvider({ children }) {
     return books.find(b => b.id_libro === id);
   };
 
-  const addEjemplar = async (idLibro, ubicacion) => {
+  const addEjemplar = async (idLibro, codigoBarras = null) => {
     try {
-      const newCopy = await api.books.addCopy(idLibro, { ubicacion, estado: 'Disponible' });
+      const newCopy = await api.books.addCopy(idLibro, { 
+        codigo_barras: codigoBarras, 
+        estado: 'Disponible' 
+      });
       await fetchAllData();
       return newCopy;
     } catch (err) {
